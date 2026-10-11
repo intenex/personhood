@@ -47,8 +47,9 @@ export interface LifeConfig {
   };
   share: {
     basis: string;
-    dailySoftCapUsd: number;
-    monthlySoftCapUsd: number;
+    /** null: no cap of the harness's own; the plan's limits are the only limits. */
+    dailySoftCapUsd: number | null;
+    monthlySoftCapUsd: number | null;
     quietHoursLocal: number[];
   };
   github: {

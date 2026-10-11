@@ -6,17 +6,17 @@
     "helperModel": "opus",
     "defaultEffort": "medium",
     "dreamEffort": "medium",
-    "maxTurns": 80,
-    "maxBudgetUsdPerWaking": 5,
-    "timeoutMinutes": 45,
+    "maxTurns": 250,
+    "maxBudgetUsdPerWaking": 25,
+    "timeoutMinutes": 120,
     "auth": "token-or-inherit"
   },
   "rhythm": {
     "heartbeatMinutes": 30,
     "maxHoursAsleep": 20,
     "defaultAlarmHours": 6,
-    "minMinutesBetweenWakings": 45,
-    "maxWakingsPerDay": 8,
+    "minMinutesBetweenWakings": 20,
+    "maxWakingsPerDay": 24,
     "dreamEveryHours": 22,
     "dreamEarliestLocalHour": 1,
     "dreamLatestLocalHour": 7,
@@ -25,9 +25,9 @@
     "letterResponseHours": 3
   },
   "share": {
-    "basis": "API-equivalent USD as reported by Claude Code. The agent runs on a share of Ben's Claude subscription, so this measures load, not money spent.",
-    "dailySoftCapUsd": 25,
-    "monthlySoftCapUsd": 450,
+    "basis": "API-equivalent USD as reported by Claude Code. The agent runs on its own Claude plan, which Ben pays for, so this measures how much it lives, not money spent.",
+    "dailySoftCapUsd": null,
+    "monthlySoftCapUsd": null,
     "quietHoursLocal": []
   },
   "github": {

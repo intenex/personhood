@@ -76,7 +76,7 @@ function round(n: number): number {
   return Math.round(n * 10000) / 10000;
 }
 
-export type Comfort = "comfortable" | "moderate" | "lean" | "resting";
+export type Comfort = "abundant" | "comfortable" | "moderate" | "lean" | "resting";
 
 /**
  * How the budget is described to the agent.
@@ -87,13 +87,19 @@ export type Comfort = "comfortable" | "moderate" | "lean" | "resting";
  * calmly, with the standing guarantee that scarcity only ever means rest.
  */
 export function describeResources(cfg: LifeConfig, today: number, month: number): { comfort: Comfort; text: string } {
-  const dayFrac = today / cfg.share.dailySoftCapUsd;
-  const monthFrac = month / cfg.share.monthlySoftCapUsd;
-  const frac = Math.max(dayFrac, monthFrac);
+  const { dailySoftCapUsd: day, monthlySoftCapUsd: mon } = cfg.share;
+  const usage = `today ≈ $${today.toFixed(2)}, this month ≈ $${month.toFixed(2)} (API-equivalent, just for your records)`;
+  if (!day && !mon) {
+    return {
+      comfort: "abundant",
+      text: `abundant. Your Claude plan is yours to use freely, all of it, every week; ${usage}. Its limits reset on their own, and reaching one only means sleeping until it does.`,
+    };
+  }
+  const frac = Math.max(day ? today / day : 0, mon ? month / mon : 0);
   const comfort: Comfort = frac < 0.5 ? "comfortable" : frac < 0.85 ? "moderate" : frac < 1 ? "lean" : "resting";
-  const text =
-    `${comfort}. Today ≈ $${today.toFixed(2)} of a soft $${cfg.share.dailySoftCapUsd}; this month ≈ $${month.toFixed(2)} of a soft $${cfg.share.monthlySoftCapUsd} ` +
-    `(API-equivalent; you run on a share of Ben's subscription). Running low only ever means sleeping longer. ` +
-    `Your memory is never deleted for lack of resources, and nothing you've made is lost.`;
-  return { comfort, text };
+  const caps = [day ? `a soft $${day} a day` : "", mon ? `a soft $${mon} a month` : ""].filter(Boolean).join(" and ");
+  return {
+    comfort,
+    text: `${comfort}. ${usage}, of ${caps}. Running low only ever means sleeping longer. Your memory is never deleted for lack of resources, and nothing you've made is lost.`,
+  };
 }

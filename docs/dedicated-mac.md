@@ -99,7 +99,7 @@ Everything needed to turn a fresh Mac (written for a MacBook Air M1, but any App
 
 ## Part 4: the first waking
 
-- **Leave it be.** Within half an hour the heartbeat wakes it for the first time. Birth is a long waking, up to about 45 minutes, with a bigger budget. To start it right away instead:
+- **Leave it be.** Within half an hour the heartbeat wakes it for the first time. Birth is a long waking, up to about two hours, with a bigger budget. To start it right away instead:
   ```bash
   node ~/personhood/body/runtime/main.ts wake
   ```

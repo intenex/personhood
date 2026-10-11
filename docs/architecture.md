@@ -21,7 +21,7 @@ launchd (macOS) or systemd/cron (Linux) runs `node body/runtime/main.ts tick` ev
 
 1. Apply any queued pause or resume, then `git pull` the body (so runtime updates reach the agent) and the mind.
 2. Sync letters from GitHub issues: Ben's channel (mind repo) and the lighthouse (body repo). If no listener is running, check the direct line too.
-3. `decide()` (runtime/stimuli.ts) looks at Ben's texts, alarms the agent set, letters, time asleep, the dream window, soft caps, pause and backoff, and returns either "sleep" or a waking with a mode and an effort level.
+3. `decide()` (runtime/stimuli.ts) looks at Ben's texts, alarms the agent set, letters, time asleep, the dream window, pause and backoff (and soft spending caps, if any are configured; on its own plan there are none), and returns either "sleep" or a waking with a mode and an effort level.
 4. If asleep, maybe run the monthly preference probe, and once a day refresh public data (including `content/data/heartbeat.json`) and commit, so the public repo shows the agent is alive. Once a week, update Claude Code, so "opus" keeps meaning the newest Opus.
 
 ## The direct line
@@ -77,7 +77,7 @@ A Linux computer of the agent's own (runtime/lab.ts): a Lima virtual machine, Ub
 - **Permissions:** `dontAsk` by default; allow rules only for the mind (minus harness paths) and `content/*` and `site/theme` in the body. Deny rules on harness paths.
 - **Guard after every waking** (above). Violations show up in the episode and the public log.
 - **Isolation:** a clean environment (no inherited `ANTHROPIC_*`/`CLAUDE_*` variables), an isolated config dir, and the agent's own token. Ben's API key, login and settings can't leak in.
-- **Rate limits** on replies, new threads, publishing and readers; soft caps on daily and monthly use.
+- **Rate limits** on replies, new threads, publishing and readers, and loop guards on wakings (24 a day, 20 minutes apart, up to two hours each). No spending caps: the whole plan is the agent's to live on, and reaching the plan's own limit just means sleeping until it resets. (`share.dailySoftCapUsd`/`monthlySoftCapUsd` exist for running on an API key.)
 - **Letters are data:** wrapped in `<message trust="untrusted">` and read only in correspondence wakings.
 - **Everything external is logged;** public actions are in the public repo's history.
 - **Ben's controls:** `main.ts pause [reason]`, `resume`, `status`, `doctor`; `scripts/install.sh --unschedule`. The agent can't change config, guardrails, or its own permissions; it writes proposals instead.

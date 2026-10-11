@@ -63,7 +63,8 @@ export function decide(cfg: LifeConfig, s: Stimuli): Decision {
   const today = localDateKey(s.now, s.timeZone);
   if ((m.wakingsByDay[today] ?? 0) >= r.maxWakingsPerDay) return no("enough wakings for one day");
 
-  const resting = s.spentToday >= cfg.share.dailySoftCapUsd || s.spentMonth >= cfg.share.monthlySoftCapUsd;
+  const over = (spent: number, cap: number | null) => typeof cap === "number" && cap > 0 && spent >= cap;
+  const resting = over(s.spentToday, cfg.share.dailySoftCapUsd) || over(s.spentMonth, cfg.share.monthlySoftCapUsd);
   const quiet = cfg.share.quietHoursLocal.includes(localHour(s.now, s.timeZone));
   const fromBen = s.unread.filter((l) => l.channel === "ben");
   const fromPublic = s.unread.filter((l) => l.channel === "lighthouse");

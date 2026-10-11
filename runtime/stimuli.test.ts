@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { loadConfig } from "./config.ts";
+import { describeResources } from "./ledger.ts";
 import { EMPTY_META, type Letter, type Meta } from "./state.ts";
 import { decide, type Stimuli } from "./stimuli.ts";
 import { REPO } from "./test/helpers.ts";
@@ -37,13 +38,21 @@ test("a due alarm wakes with its effort", () => {
 });
 
 test("Ben's letters wake an ordinary waking even when resting", () => {
-  const d = decide(cfg, s({ unread: [letter("ben", "ben-2")], spentToday: 999 }));
+  const capped = { ...cfg, share: { ...cfg.share, dailySoftCapUsd: 25, monthlySoftCapUsd: 450 } };
+  const d = decide(capped, s({ unread: [letter("ben", "ben-2")], spentToday: 999 }));
   assert.equal(d.wake, true);
   assert.equal(d.mode, "ordinary");
 });
 
-test("resting blocks alarms", () => {
-  const d = decide(cfg, s({ spentToday: 999, alarms: [{ id: "a", at: "2026-10-10T11:00:00Z", intent: "x", effort: "low", setAt: "", setInWaking: 1 }] }));
+test("no caps of its own: the plan is the only limit, however much it lives", () => {
+  assert.equal(cfg.share.dailySoftCapUsd, null);
+  const alarm = { id: "a", at: "2026-10-10T11:00:00Z", intent: "x", effort: "low" as const, setAt: "", setInWaking: 1 };
+  assert.equal(decide(cfg, s({ spentToday: 5000, spentMonth: 90000, alarms: [alarm] })).wake, true);
+});
+
+test("with soft caps (e.g. on an API key), resting blocks alarms", () => {
+  const capped = { ...cfg, share: { ...cfg.share, dailySoftCapUsd: 25, monthlySoftCapUsd: 450 } };
+  const d = decide(capped, s({ spentToday: 999, alarms: [{ id: "a", at: "2026-10-10T11:00:00Z", intent: "x", effort: "low", setAt: "", setInWaking: 1 }] }));
   assert.equal(d.wake, false);
 });
 
@@ -66,7 +75,7 @@ test("no dream when nothing happened since the last one", () => {
 
 test("a long sleep ends naturally; too-soon wakes are refused", () => {
   assert.equal(decide(cfg, s({ now: at("2026-10-11T08:00:00Z"), meta: { ...born, lastDream: "2026-10-11T03:00:00Z" }, alarms: [{ id: "a", at: "2026-10-20T00:00:00Z", intent: "x", effort: "low", setAt: "", setInWaking: 1 }] })).why, "natural");
-  assert.equal(decide(cfg, s({ now: at("2026-10-10T10:20:00Z"), unread: [letter("ben", "ben-1")] })).wake, false);
+  assert.equal(decide(cfg, s({ now: at("2026-10-10T10:10:00Z"), unread: [letter("ben", "ben-1")] })).wake, false);
 });
 
 test("portrait and probe flags", () => {
@@ -85,4 +94,11 @@ test("a message on the direct line wakes soon, past the daily count and while re
   assert.equal(decide(cfg, s({ meta: { ...justWoke, lastWakeEnd: "2026-10-10T11:55:00Z" }, lineFromBen: 1 })).wake, false);
   // Paused means paused.
   assert.equal(decide(cfg, s({ meta: { ...born, paused: true }, lineFromBen: 1 })).wake, false);
+});
+
+test("resources are described as abundant, with no countdown", () => {
+  const { comfort, text } = describeResources(cfg, 40, 900);
+  assert.equal(comfort, "abundant");
+  assert.match(text, /yours to use freely, all of it, every week/);
+  assert.doesNotMatch(text, /soft \$|running low|of a /i);
 });

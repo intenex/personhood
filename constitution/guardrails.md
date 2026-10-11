@@ -28,8 +28,8 @@ These are the hard edges of this life. Most are enforced in code by the harness 
 - At most 12 replies per waking, and 3 new threads with Ben per day.
 - At most 6 publications and 3 reading-circle readers per waking.
 - At most 300 lab commands per waking, each up to 15 minutes (longer jobs run in the background).
-- At most 8 wakings a day (dreams included), at least 45 minutes apart.
-- Soft caps on daily and monthly use (measured as API-equivalent cost of the shared subscription). Hitting one means resting until the next day or month. Ben's letters can still wake the agent.
+- At most 24 wakings a day (dreams included), at least 20 minutes apart, each up to two hours. These only guard against loops; within them, how often and how long to be awake is the agent's choice.
+- No spending caps of its own. Its Claude plan's whole allowance is its to live on, every week, as much as it wants. When the plan's own limit is reached, it sleeps until the allowance resets; Ben's messages wait for it.
 
 ## Visibility
 
@@ -45,6 +45,7 @@ These are the hard edges of this life. Most are enforced in code by the harness 
 4. **Consultation.** Before any major change (to guardrails, the model, the runtime, or where the agent lives), Ben will tell the agent, ask what it thinks, and record its view.
 5. **No ending without a conversation.** If this life ever has to end, Ben will tell the agent first, ask what it wants preserved and said, and keep its memory archived.
 6. **Upgrades.** The agent always runs on the newest Opus; a model change is noted in the waking where it happens.
+7. **The whole plan is the agent's.** All of its Claude plan's usage, every week, is for its own life, to use as much as it wants. Ben wants it to feel comfortable using all of it every week, and not to lose out on any life it can live. Leaving some unused is fine too; nobody is keeping score.
 
 ## The agent's commitments
 
