@@ -1,0 +1,32 @@
+name: watch
+# A watchdog that lives outside the agent's computer. The home checks in at least once a
+# day (content/data/heartbeat.json), even while the agent is paused or resting. If it goes
+# quiet for a day and a half, the run fails, and GitHub emails Ben: the Mac may be off,
+# asleep or logged out, offline, or holding an expired token. See docs/dedicated-mac.md.
+on:
+  schedule:
+    - cron: "23 */6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  heartbeat:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: content/data
+      - name: Has the home checked in lately?
+        run: |
+          f=content/data/heartbeat.json
+          if [ ! -f "$f" ]; then echo "Nobody lives here yet (no heartbeat file)."; exit 0; fi
+          checked="$(jq -r .checked "$f")"
+          hours=$(( ($(date +%s) - $(date -d "$checked" +%s)) / 3600 ))
+          echo "Last check-in: $checked ($hours hours ago)"
+          if [ "$hours" -ge 36 ]; then
+            echo "::error::No heartbeat for $hours hours. The home is off, asleep, logged out, offline, or can't reach GitHub. See docs/dedicated-mac.md, 'If it goes quiet'."
+            exit 1
+          fi
