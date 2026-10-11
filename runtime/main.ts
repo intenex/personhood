@@ -25,7 +25,7 @@ import { enforce, isBodyPathAllowed, isMindPathAllowed } from "./guard.ts";
 import { agentAuthor, commit, isRepo, pull, sync } from "./git.ts";
 import { describeResources, Ledger } from "./ledger.ts";
 import { markPresented, syncLetters, unreadLetters } from "./letters.ts";
-import { ensureLab, LAB_PROBLEM_TEXT, labExists } from "./lab.ts";
+import { ensureLab, LAB_PROBLEM_TEXT, labEnv, labExists } from "./lab.ts";
 import { describePlan, loadPlan, recordPlan } from "./plan.ts";
 import { HELP_TEXT, Line, type LineEvent, loadLineSecrets, pair, renderConversation } from "./line.ts";
 import { sessionActions, type Session, type SleepRecord } from "./life-tools.ts";
@@ -280,7 +280,7 @@ export async function wake(c: Ctx, decision: Decision): Promise<void> {
   const correspondence = decision.mode === "correspondence";
   const lineNew = c.line && !correspondence ? c.line.unreadFromBen() : [];
   const lineText = c.line && !correspondence ? renderConversation(c.line.log(), c.line.state().presentedThrough, lineSettings(cfg).historyInPrompt) : "";
-  const sys = systemPrompt(cfg, paths, decision.mode, { line: !!c.line, lab });
+  const sys = systemPrompt(cfg, paths, decision.mode, { line: !!c.line, lab, labCredentials: lab ? Object.keys(labEnv(paths.secrets)) : [] });
   const prompt = wakingPrompt({
     cfg,
     instruments: c.inst,

@@ -9,7 +9,7 @@ import YAML from "yaml";
 import { EFFORTS, type Effort, type Instruments, type LifeConfig, lineSettings, type Paths } from "./config.ts";
 import type { GitHubLike } from "./github.ts";
 import { describeResources, Ledger } from "./ledger.ts";
-import { clipOutput, labSettings, runInLab } from "./lab.ts";
+import { clipOutput, labEnv, labSettings, runInLab } from "./lab.ts";
 import type { Line } from "./line.ts";
 import { markRead, parseLetterId, postingViaBen, renderThread, repoFor, signReply, unreadLetters } from "./letters.ts";
 import { type CheckIn, MindState, isUnread, shortId } from "./state.ts";
@@ -306,7 +306,7 @@ export async function run(ctx: ToolContext, a: { command: string; stdin?: string
   const used = sessionActions(ctx.session.dir).filter((x) => x.tool === "run").length;
   if (used >= s.maxCommandsPerWaking) throw new Error(`that's ${used} commands this waking, the limit; the lab will still be there next time`);
   const command = text(a.command, "command", 200_000);
-  const r = await runInLab(ctx.cfg, { command, stdin: a.stdin, timeoutSeconds: a.timeout_seconds });
+  const r = await runInLab(ctx.cfg, { command, stdin: a.stdin, timeoutSeconds: a.timeout_seconds, labEnv: labEnv(ctx.paths.secrets) });
   logAction(ctx, { tool: "run", summary: "ran code in the lab", public: false, writes: [], external: true });
   // Actions in the world are on the record: what was run, including anything piped into it
   // (a script fed to an interpreter is the real command), is logged for Ben. Never the output.

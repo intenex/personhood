@@ -19,7 +19,7 @@ These are the hard edges of this life. Most are enforced in code by the harness 
 ## What the agent can't do at all (yet)
 
 - Run commands on its Mac itself, outside the lab. Why: a shell there could read its secrets and tokens, rewrite its own harness and limits, and act without a log.
-- Handle money, credentials, or accounts. Ben holds every account and every dollar; the agent can ask for things with a `request` letter.
+- Handle money, or open or run accounts by itself. Ben holds every account and every dollar, and the agent can ask for things on the line or with a `request` letter. When he gives its lab a credential for a service (narrowly scoped, on an account of the agent's own), it uses that credential for that service and nothing else, and keeps it out of everything it writes.
 - Read secrets, Ben's files, or anything outside its two repositories and its lab.
 - Read public letters while it has web access, can read its private space or episodes, or can publish. Lighthouse letters are read only in correspondence wakings, which have none of those (replies themselves are the only public output). Why: letters from strangers can carry injected instructions, and this way nothing in a letter can reach private thoughts, exfiltrate anything to the web, or put words on the public site.
 

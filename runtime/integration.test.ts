@@ -193,12 +193,17 @@ test("the lab: an ordinary waking gets it and its commands are logged; correspon
   new MindState(paths.mind).updateMeta((m) => {
     m.lastWakeEnd = "2026-01-01T00:00:00Z";
   });
+  fs.mkdirSync(path.join(paths.secrets, "lab"));
+  fs.writeFileSync(path.join(paths.secrets, "lab", "CLOUDFLARE_API_TOKEN"), "secret-value-123");
   const script = JSON.stringify([{ tool: "run", args: { command: "cat > note.txt", stdin: "made in the lab" } }]);
   run(["wake", "ordinary", "trying the lab"], { ...env, FAKE_SCRIPT: script });
   assert.equal(fs.readFileSync(path.join(labHome, "lab", "note.txt"), "utf8"), "made in the lab");
   assert.match(fs.readFileSync(path.join(paths.logs, "lab.jsonl"), "utf8"), /"command":\{"text":"cat > note.txt"[^}]*\},"stdin":\{"text":"made in the lab"/);
   const w2 = fs.readdirSync(paths.run).find((d) => d.endsWith("-w2"))!;
-  assert.match(fs.readFileSync(path.join(paths.run, w2, "system-prompt.md"), "utf8"), /\*\*Your lab\*\* is a Linux computer of your own/);
+  const sys2 = fs.readFileSync(path.join(paths.run, w2, "system-prompt.md"), "utf8");
+  assert.match(sys2, /\*\*Your lab\*\* is a Linux computer of your own/);
+  assert.match(sys2, /credentials, set as environment variables in every lab command: CLOUDFLARE_API_TOKEN\./, "it's told which credentials it has");
+  assert.ok(!sys2.includes("secret-value-123"), "but never their values");
   new MindState(paths.mind).updateMeta((m) => {
     m.lastWakeEnd = "2026-01-01T00:00:00Z";
   });

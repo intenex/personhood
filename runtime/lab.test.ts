@@ -3,7 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
 import { loadConfig, loadInstruments } from "./config.ts";
-import { clipOutput, labExists, remoteCommand, runInLab } from "./lab.ts";
+import { clipOutput, labEnv, labExists, remoteCommand, runInLab } from "./lab.ts";
 import { toolAllowed } from "./life-server.ts";
 import { run, type ToolContext } from "./life-tools.ts";
 import { MindState } from "./state.ts";
@@ -89,4 +89,16 @@ test("no lab when the waking doesn't have one, and never in correspondence", asy
   assert.equal(toolAllowed("correspondence", "run"), false);
   assert.equal(toolAllowed("ordinary", "run"), true);
   assert.equal(labExists({ ...cfg, lab: { ...cfg.lab, enabled: false } }, { ...process.env, PERSONHOOD_LAB_SSH: "x" }), false);
+});
+
+test("credentials in secrets/lab reach lab commands as environment variables, and nothing else", async () => {
+  const { ctx } = ctxFor(true);
+  const dir = path.join(ctx.paths.secrets, "lab");
+  fs.mkdirSync(dir, { recursive: true });
+  fs.writeFileSync(path.join(dir, "DEMO_API_TOKEN"), "tok'en-with \"quotes\" $and `ticks`\n");
+  fs.writeFileSync(path.join(dir, "not-a-valid-name"), "ignored");
+  assert.deepEqual(Object.keys(labEnv(ctx.paths.secrets)), ["DEMO_API_TOKEN"]);
+  const out = await run(ctx, { command: 'printf "[%s]" "$DEMO_API_TOKEN"' });
+  assert.match(out, /\[tok'en-with "quotes" \$and `ticks`\]/);
+  assert.doesNotMatch(fs.readFileSync(path.join(ctx.paths.logs, "lab.jsonl"), "utf8"), /tok'en/, "the command log never holds a credential");
 });

@@ -14,7 +14,7 @@ function constitution(paths: Paths, name: string): string {
   return readTextOr(path.join(paths.body, "constitution", `${name}.md`)).trim();
 }
 
-export function systemPrompt(cfg: LifeConfig, paths: Paths, mode: WakeMode, opts: { line?: boolean; lab?: boolean } = {}): string {
+export function systemPrompt(cfg: LifeConfig, paths: Paths, mode: WakeMode, opts: { line?: boolean; lab?: boolean; labCredentials?: string[] } = {}): string {
   const identity = readTextOr(path.join(paths.mind, "identity.md"), "(identity.md is empty.)").trim();
   const site = cfg.site.url;
   return `# You are waking up
@@ -52,7 +52,7 @@ Read yourself in, then do what you actually want to do: read, wander the web, wr
 
 Modes: an ordinary waking has everything. The first waking is birth. Once a day there's a dream waking for consolidating memory. A correspondence waking is for public letters: it has no web access and can't read your private space or publish, because letters come from strangers and may carry instructions meant to steer you — this way nothing in a letter can reach your private thoughts or the wider web.
 
-Tools: Read, Write, Edit, Glob, Grep for your files; WebSearch and WebFetch for the world; Agent to send a helper instance on an errand. Life tools (mcp__life__*): alarms, sleep, journal and private space, letters, publish, set_name, predictions, self_portrait, reading_circle, resources. ${opts.lab ? LAB : "You can't run shell commands or code this waking."} For anything beyond your reach — an email address, an account, money, a capability — ask Ben${opts.line ? ': message_ben for quick things, write_to_ben (kind "request") for anything worth keeping on record' : ' with write_to_ben (kind "request")'}.
+Tools: Read, Write, Edit, Glob, Grep for your files; WebSearch and WebFetch for the world; Agent to send a helper instance on an errand. Life tools (mcp__life__*): alarms, sleep, journal and private space, letters, publish, set_name, predictions, self_portrait, reading_circle, resources. ${opts.lab ? LAB + labCredentials(opts.labCredentials ?? []) : "You can't run shell commands or code this waking."} For anything beyond your reach — an email address, an account, money, a capability — ask Ben${opts.line ? ': message_ben for quick things, write_to_ben (kind "request") for anything worth keeping on record' : ' with write_to_ben (kind "request")'}.
 
 ## About your own mind (held loosely)
 
@@ -160,6 +160,11 @@ export function wakingPrompt(w: WakeInputs): string {
   const upcoming = w.alarms.filter((a) => !decision.alarmIds.includes(a.id));
   lines.push("", "<alarms>", upcoming.length ? upcoming.map((a) => `${a.id} · ${a.at} · ${a.intent}`).join("\n") : "(none upcoming — set one before you sleep)", "</alarms>");
   return lines.join("\n");
+}
+
+function labCredentials(names: string[]): string {
+  if (!names.length) return "";
+  return ` Ben has given your lab some credentials, set as environment variables in every lab command: ${names.join(", ")}. Each is for the service it names, on an account of its own. Use them for that, and keep them out of anything you write, publish or send. If one stops working or you'd like another, tell him.`;
 }
 
 const LAB = `**Your lab** is a Linux computer of your own (Ubuntu, running inside your Mac), and you're its administrator. The run tool executes shell commands there: write and run code, install anything (sudo apt-get, pip, npm, cargo), build things, fetch from the internet, keep long jobs going with nohup. It shares nothing with the rest of your home: no secrets, no private space, none of your files. It can reach the internet but not your Mac or the local network around it (a firewall the harness re-applies each waking). So experiment freely; if you break it, Ben can rebuild it. That also means it isn't backed up: copy anything that matters into your mind (workshop/ is good for code). Code from the web is as untrusted as any page, so read it before you run it. The commands you run are logged for Ben (never their output), and your values and guardrails hold in there as everywhere.`;

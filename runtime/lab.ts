@@ -127,8 +127,37 @@ export interface LabResult {
   timedOut: boolean;
 }
 
+/**
+ * Credentials Ben has given the lab: each file in secrets/lab/ named like an environment variable
+ * (CLOUDFLARE_API_TOKEN) becomes one, inside lab commands only. Nothing else hands them out.
+ */
+export function labEnv(secretsDir: string): Record<string, string> {
+  const dir = path.join(secretsDir, "lab");
+  const out: Record<string, string> = {};
+  let names: string[] = [];
+  try {
+    names = fs.readdirSync(dir);
+  } catch {
+    return out;
+  }
+  for (const name of names) {
+    if (!/^[A-Z_][A-Z0-9_]*$/.test(name)) continue;
+    try {
+      const v = fs.readFileSync(path.join(dir, name), "utf8").trim();
+      if (v) out[name] = v;
+    } catch {
+      // unreadable: skip
+    }
+  }
+  return out;
+}
+
+const shellQuote = (v: string) => `'${v.replace(/'/g, `'\\''`)}'`;
+
 /** The shell line run inside the VM: decode the script, run it from ~/lab under a timeout, clean up. */
-export function remoteCommand(script: string, timeoutSeconds: number): string {
+export function remoteCommand(command: string, timeoutSeconds: number, env: Record<string, string> = {}): string {
+  const exports = Object.entries(env).map(([k, v]) => `export ${k}=${shellQuote(v)}\n`).join("");
+  const script = exports + command;
   const b64 = Buffer.from(script, "utf8").toString("base64");
   const t = Math.max(1, Math.round(timeoutSeconds));
   return [
@@ -139,11 +168,11 @@ export function remoteCommand(script: string, timeoutSeconds: number): string {
 
 const MAX_CAPTURE = 4_000_000;
 
-export function runInLab(cfg: LifeConfig, a: { command: string; stdin?: string; timeoutSeconds?: number }, env: NodeJS.ProcessEnv = process.env): Promise<LabResult> {
+export function runInLab(cfg: LifeConfig, a: { command: string; stdin?: string; timeoutSeconds?: number; labEnv?: Record<string, string> }, env: NodeJS.ProcessEnv = process.env): Promise<LabResult> {
   const s = labSettings(cfg);
   const timeout = Math.min(Math.max(a.timeoutSeconds ?? s.defaultTimeoutSeconds, 1), s.maxTimeoutSeconds);
   const ssh = env.PERSONHOOD_LAB_SSH ?? "ssh";
-  const args = sshArgs(cfg, env, remoteCommand(a.command, timeout));
+  const args = sshArgs(cfg, env, remoteCommand(a.command, timeout, a.labEnv));
   const started = Date.now();
   return new Promise((resolve) => {
     const child = spawn(ssh, args, { env, stdio: ["pipe", "pipe", "pipe"] });

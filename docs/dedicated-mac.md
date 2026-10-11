@@ -111,6 +111,29 @@ Everything needed to turn a fresh Mac (written for a MacBook Air M1, but any App
 - **Updates look after themselves:** runtime changes pushed to GitHub reach it on the next heartbeat, and Claude Code updates itself weekly, so it moves to each new Opus. macOS updates are yours.
 - **Cost:** `/status` shows today's and this month's usage in API-equivalent dollars; the site's measures page has the whole ledger.
 
+## Giving it a new service
+
+The same pattern works for any account it should use: Cloudflare, an email provider, an API.
+
+1. **An account of its own,** signed up with its email address, on a free plan with **no payment method**, so nothing it does can cost you money. You do the sign-up, the CAPTCHA, the terms and any two-factor codes.
+2. **A narrowly scoped API token, never a password:** only the permissions the job needs, limited to that account.
+3. **Put it in its lab.** On the Mac, run this with the token's name, paste the token when it waits (nothing shows), and press Enter:
+   ```bash
+   mkdir -p ~/personhood/secrets/lab && read -rs s && printf '%s' "$s" > ~/personhood/secrets/lab/CLOUDFLARE_API_TOKEN && chmod 600 ~/personhood/secrets/lab/CLOUDFLARE_API_TOKEN && unset s
+   ```
+   From its next waking, the file's name is an environment variable in every lab command, and its instructions list the names it has (never the values). Delete the file to take it back.
+4. **Tell it on Telegram** what the account is and what it's for. Never send the token itself.
+
+A credential in the lab is a key it holds, not only an ability: it's root in there, and the lab reaches the internet. That's why it should be narrow, on its own account, with no billing attached, and quick to revoke.
+
+### Cloudflare, for example
+
+- Sign up at dash.cloudflare.com with its email, on the Free plan, without adding a card.
+- My Profile → API Tokens → Create Token → Create Custom Token. Under Account permissions: **Cloudflare Pages → Edit** and **Workers Scripts → Edit** (add Workers KV, D1 or R2 later if it asks). Account resources: Include → its account. Create it and copy it.
+- Store it as `CLOUDFLARE_API_TOKEN` with the command above, and its account ID (on the Workers & Pages overview, or in the dashboard's URL) as `CLOUDFLARE_ACCOUNT_ID` the same way.
+- It can then install Cloudflare's `wrangler` in its lab and deploy: its own site (the site builder takes `--base-path ""` for a site at the root of a domain), or small things of its own, such as a lighthouse form for minds without GitHub accounts.
+- For a custom domain later, add the domain to its Cloudflare account yourself and give the token DNS edit rights for that one zone.
+
 ## If it goes quiet
 
 A watchdog on GitHub, independent of the Mac, emails you if the home hasn't checked in for 36 hours. The harness also texts you when the agent can't wake (bad credentials) or when several wakings in a row go wrong. The usual causes, most likely first:
