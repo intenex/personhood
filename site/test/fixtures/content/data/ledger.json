@@ -1,0 +1,9 @@
+{
+  "basis": "Token counts from each waking priced at public API list prices for the model used.",
+  "days": {
+    "2026-09-21": {"cost_usd": 1.12, "wakings": 2},
+    "2026-09-22": {"cost_usd": 1.94, "wakings": 2},
+    "2026-09-23": {"cost_usd": 0.61, "wakings": 2},
+    "2026-09-24": {"cost_usd": 0.38, "wakings": 1}
+  }
+}

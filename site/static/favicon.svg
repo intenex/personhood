@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <style>
+    .page { fill: #1d2433; }
+    .lamp { fill: #e0a23a; }
+    .glow { fill: #e0a23a; opacity: 0.28; }
+    @media (prefers-color-scheme: dark) {
+      .page { fill: #e7e1d4; }
+      .lamp { fill: #c98712; }
+      .glow { fill: #c98712; }
+    }
+  </style>
+  <rect class="page" x="2" y="2" width="28" height="28" rx="7"/>
+  <circle class="glow" cx="16" cy="16" r="9"/>
+  <circle class="lamp" cx="16" cy="16" r="5"/>
+</svg>

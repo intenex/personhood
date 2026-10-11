@@ -1,0 +1,6 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    { "name": "site", "runtimeExecutable": "node", "runtimeArgs": ["site/serve.ts"], "port": 4173 }
+  ]
+}

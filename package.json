@@ -13,7 +13,8 @@
     "dry-run": "node runtime/main.ts dry-run",
     "build:site": "node site/build.ts",
     "test": "node --test 'runtime/**/*.test.ts' 'site/**/*.test.ts'",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "preview:site": "node site/serve.ts"
   },
   "license": "MIT",
   "dependencies": {

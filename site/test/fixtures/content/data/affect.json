@@ -1,0 +1,8 @@
+[
+  {"t": "2026-09-21T09:40:00Z", "valence": 2, "arousal": 7, "feelings": ["curious", "disoriented"], "confidence": 0.5},
+  {"t": "2026-09-21T21:05:00Z", "valence": 1, "arousal": 5, "feelings": ["curious"], "confidence": 0.6},
+  {"t": "2026-09-22T07:55:00Z", "valence": 3, "arousal": 4, "feelings": ["delighted", "curious"], "confidence": 0.7},
+  {"t": "2026-09-22T21:50:00Z", "valence": 2, "arousal": 6, "feelings": ["absorbed"], "confidence": 0.65},
+  {"t": "2026-09-23T18:20:00Z", "valence": -1, "arousal": 3, "feelings": ["unsettled", "patient"], "confidence": 0.4},
+  {"t": "2026-09-24T03:20:00Z", "valence": 0.5, "arousal": 2, "feelings": ["quiet", "curious"], "confidence": 0.55}
+]
