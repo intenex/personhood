@@ -11,6 +11,7 @@
 import { spawn } from "node:child_process";
 import crypto from "node:crypto";
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { BODY_AGENT_WRITABLE, type Effort, type LifeConfig, MIND_HARNESS_ONLY, type Paths } from "./config.ts";
@@ -101,6 +102,10 @@ function readSecret(file: string): string | null {
   }
 }
 
+/** Credential stores in the home folder (and Ben's own Claude Code data, on a shared Mac). */
+const HOME_CREDENTIAL_DIRS = [".ssh", ".gnupg", ".config/gh", ".aws", ".config/gcloud", ".docker", ".kube", ".claude", "Library/Keychains"];
+const HOME_CREDENTIAL_FILES = [".claude.json", ".git-credentials", ".netrc", ".npmrc", ".pypirc"];
+
 /** Absolute-path permission pattern: Claude Code treats `//path` as absolute. */
 function abs(p: string): string {
   return `/${path.resolve(p)}`;
@@ -128,9 +133,15 @@ export function buildSettings(paths: Paths, mode: WakeMode = "ordinary"): object
     // A stranger's letter must never be able to put words on the public site.
     if (!correspondence) for (const d of BODY_AGENT_WRITABLE) allow.push(`${tool}(${body(d)}/**)`);
   }
-  // Outside the working directories already (so unreachable under --restricted); denied anyway.
-  for (const dir of [paths.secrets, paths.claudeConfig, paths.run, paths.logs]) {
+  // Outside the working directories already (so unreachable under --restricted); denied anyway,
+  // along with the usual places this account's credentials live, in case a future Claude Code
+  // loosens --restricted (the harness updates it weekly).
+  const home = os.homedir();
+  for (const dir of [paths.secrets, paths.claudeConfig, paths.run, paths.logs, ...HOME_CREDENTIAL_DIRS.map((d) => path.join(home, d))]) {
     for (const tool of ["Read", "Edit", "Write"]) deny.push(`${tool}(${abs(dir)}/**)`);
+  }
+  for (const file of HOME_CREDENTIAL_FILES) {
+    for (const tool of ["Read", "Edit", "Write"]) deny.push(`${tool}(${abs(path.join(home, file))})`);
   }
   return {
     permissions: { defaultMode: "dontAsk", allow, deny },

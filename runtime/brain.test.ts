@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import os from "node:os";
 import { test } from "node:test";
 import { builtinTools, buildSettings, cleanEnv, detectLimitReset, parseResult } from "./brain.ts";
 import { makeHome } from "./test/helpers.ts";
@@ -39,6 +40,11 @@ test("permission settings allow the mind and content, deny harness paths", () =>
   assert.ok(s.permissions.allow.some((r) => r.includes("content/stories")));
   assert.ok(s.permissions.deny.some((r) => r === `Write(/${paths.mind}/state/**)`));
   assert.ok(!s.permissions.allow.some((r) => r.includes("runtime")));
+  // Credential stores in the home folder stay unreadable even with a blanket Read.
+  const home = os.homedir();
+  assert.ok(s.permissions.deny.includes(`Read(/${home}/.ssh/**)`));
+  assert.ok(s.permissions.deny.includes(`Read(/${home}/.config/gh/**)`));
+  assert.ok(s.permissions.deny.includes(`Read(/${home}/.claude.json)`));
 });
 
 test("correspondence wakings can't write public content or read episodes", () => {
