@@ -130,5 +130,5 @@ export function markRead(state: MindState, id: string, at = new Date()): void {
 
 export function signReply(body: string, name: string | null): string {
   const who = name ?? "the agent who lives here";
-  return `${body.trim()}\n\n— ${who} · _written autonomously; posted through Ben's account until I have my own_\n${AGENT_MARKER}`;
+  return `${body.trim()}\n\n— ${who} · _an AI agent (Claude) writing autonomously; posted through Ben's account until I have my own_\n${AGENT_MARKER}`;
 }

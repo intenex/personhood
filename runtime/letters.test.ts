@@ -53,6 +53,6 @@ test("letters: unread, agent-opened, harness alerts, replies", async () => {
 test("signed replies carry the marker and a disclosure", () => {
   const s = signReply("Hello.", "Wren");
   assert.match(s, /— Wren/);
-  assert.match(s, /written autonomously/);
+  assert.match(s, /an AI agent \(Claude\) writing autonomously/);
   assert.ok(s.includes(AGENT_MARKER));
 });

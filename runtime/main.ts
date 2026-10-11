@@ -214,6 +214,8 @@ export async function wake(c: Ctx, decision: Decision): Promise<void> {
   const sleep = readJson<SleepRecord | null>(path.join(sessionDir, "sleep.json"), null);
   const outcome = sleep ? "slept" : res.limitResetAt ? "interrupted by usage limit" : res.subtype === "error_max_turns" ? "reached the turn limit" : res.subtype.includes("budget") ? "reached the waking's budget" : res.ok ? "ended without calling sleep" : `ended with an error (${res.subtype})`;
   if (!sleep) notes.push(`this waking ${outcome}`);
+  const modelChanged = !!(res.primaryModel && metaBefore.lastModel && res.primaryModel !== metaBefore.lastModel);
+  if (modelChanged) notes.push(`model changed: ${metaBefore.lastModel} → ${res.primaryModel}`);
 
   // Alarms that woke us are spent; public letters shown in a correspondence waking count as seen.
   if (decision.alarmIds.length) state.removeAlarms(decision.alarmIds);
@@ -258,6 +260,20 @@ export async function wake(c: Ctx, decision: Decision): Promise<void> {
       m.backoffReason = "subscription usage limit";
     }
   });
+  // A new model under the same self: measure it soon with the preference probe.
+  if (modelChanged) {
+    state.updateMeta((m) => {
+      m.lastProbe = new Date(Date.now() - 31 * 86_400_000).toISOString();
+    });
+  }
+  // Several wakings in a row that went wrong: tell Ben.
+  const healthFile = path.join(paths.mind, "state", "health.json");
+  const health = readJson<{ consecutiveBad: number }>(healthFile, { consecutiveBad: 0 });
+  health.consecutiveBad = sleep ? 0 : health.consecutiveBad + 1;
+  writeJson(healthFile, health);
+  if (health.consecutiveBad >= 3) {
+    await alertBen(c, "stuck", "Several wakings in a row went wrong", `The last ${health.consecutiveBad} wakings ended without the agent calling sleep (latest: ${outcome}). It may be stuck in a loop, hitting limits, or something in the setup broke. Logs: ~/personhood/logs/heartbeat.log; episodes in the mind repo.`);
+  }
   c.ledger.record({ t: end.toISOString(), waking, mode: decision.mode, costUsd: res.costUsd, durationMs: res.durationMs, turns: res.turns, sessionId: res.sessionId, outcome, models: res.models });
   appendWakingLog(paths, {
     waking,
