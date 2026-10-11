@@ -38,6 +38,7 @@ scripts/install.sh
 The script creates `~/personhood` (body, private mind repo, secrets, isolated Claude config) and asks for the agent's own Claude token (`claude setup-token`, signed in as the agent's account). It then checks everything and schedules the heartbeat. Then:
 
 ```bash
+node ~/personhood/body/runtime/main.ts smoke    # a tiny real session in a sandbox, to check everything
 node ~/personhood/body/runtime/main.ts status   # or: wake · doctor · pause [reason] · resume
 ```
 

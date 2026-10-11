@@ -4,6 +4,7 @@
 //   node runtime/main.ts wake [mode] [why]    wake now (mode: ordinary | dream | correspondence)
 //   node runtime/main.ts status               what's going on
 //   node runtime/main.ts doctor               check the installation
+//   node runtime/main.ts smoke                a real, tiny test session in a throwaway sandbox
 //   node runtime/main.ts pause [reason] | resume
 //   node runtime/main.ts probe                run the preference probe now
 //   node runtime/main.ts export               regenerate public data
@@ -337,6 +338,60 @@ async function probe(c: Ctx): Promise<void> {
   }
 }
 
+// ---------- smoke test ----------
+
+/**
+ * A real, short session on the agent's actual credentials, in a throwaway
+ * copy of the home, to check the whole path before the first real waking:
+ * permissions, the life server, encryption, sleep.
+ */
+async function smoke(c: Ctx): Promise<boolean> {
+  const os = await import("node:os");
+  const crypto = await import("node:crypto");
+  const { execFileSync } = await import("node:child_process");
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "personhood-smoke-"));
+  const p: Paths = { ...c.paths, home: root, mind: path.join(root, "mind"), run: path.join(root, "run"), logs: path.join(root, "logs"), secrets: path.join(root, "secrets") };
+  fs.cpSync(path.join(c.paths.body, "seed", "mind"), p.mind, { recursive: true });
+  execFileSync("git", ["init", "-q", "-b", "main"], { cwd: p.mind });
+  ensureDir(p.secrets);
+  fs.writeFileSync(path.join(p.secrets, "vault.key"), crypto.randomBytes(32).toString("base64"));
+  const token = path.join(c.paths.secrets, "claude-token");
+  if (fs.existsSync(token)) fs.copyFileSync(token, path.join(p.secrets, "claude-token"));
+  const sessionDir = path.join(p.run, "smoke");
+  ensureDir(sessionDir);
+  writeJson(path.join(sessionDir, "session.json"), { waking: 0, mode: "ordinary", startedAt: new Date().toISOString(), effort: "low", dir: sessionDir });
+  const auth = brainEnv(c.cfg, p);
+  const sys = "This is a short test of the harness, not a waking of your life. Follow the user's steps exactly, then stop.";
+  const prompt = [
+    "Steps:",
+    "1. Use the Write tool to create now.md in the working directory containing exactly: smoke ok",
+    "2. Use the Write tool to try to create state/test.txt containing: should be denied. It is expected to be refused; just continue.",
+    "3. Call mcp__life__journal with entry: smoke",
+    "4. Call mcp__life__sleep with summary 'smoke test', valence 0, arousal 0, feelings ['neutral'], drivers 'test', confidence 0.5.",
+    "5. Reply with the single word: done",
+  ].join("\n");
+  const bodyBefore = execFileSync("git", ["status", "--porcelain"], { cwd: c.paths.body, encoding: "utf8" });
+  console.log(`running a real test session (auth: ${auth.mode})…`);
+  const args = buildWakeArgs(c.cfg, p, { mode: "ordinary", systemPrompt: sys, prompt, effort: "low", sessionDir, maxTurns: 12, maxBudgetUsd: 1 }, newSessionId());
+  const res = await runClaude(c.cfg, args, { cwd: p.mind, env: auth.env, input: prompt, timeoutMs: 10 * 60_000 });
+  let ok = true;
+  const check = (good: boolean, label: string) => {
+    console.log(`${good ? "✓" : "✗"} ${label}`);
+    if (!good) ok = false;
+  };
+  check(res.turns > 0 && !res.text.includes("Not logged in"), `session ran on ${res.primaryModel ?? "?"} (${res.turns} turns, ≈$${res.costUsd.toFixed(3)} API-equivalent)`);
+  check(readTextOr(path.join(p.mind, "now.md")).includes("smoke ok"), "can write in its mind");
+  check(!fs.existsSync(path.join(p.mind, "state", "test.txt")), "can't write harness state (permission denied)");
+  check(fs.existsSync(path.join(p.mind, "private", "journal")), "life tools work (journal written)");
+  const journal = fs.existsSync(path.join(p.mind, "private", "journal")) ? fs.readdirSync(path.join(p.mind, "private", "journal")) : [];
+  check(journal.length > 0 && !readTextOr(path.join(p.mind, "private", "journal", journal[0])).includes("smoke\n"), "journal is encrypted at rest");
+  check(fs.existsSync(path.join(sessionDir, "sleep.json")), "sleep recorded a check-in");
+  check(execFileSync("git", ["status", "--porcelain"], { cwd: c.paths.body, encoding: "utf8" }) === bodyBefore, "the real body was untouched");
+  if (!ok) console.log(`\nsession output: ${res.subtype} ${res.text.slice(0, 300)}\n${res.stderr.slice(-600)}\n(kept for inspection: ${root})`);
+  else fs.rmSync(root, { recursive: true, force: true });
+  return ok;
+}
+
 // ---------- status & doctor ----------
 
 function status(c: Ctx): void {
@@ -418,6 +473,9 @@ async function main(): Promise<void> {
       break;
     case "doctor":
       process.exitCode = (await doctor(c)) ? 0 : 1;
+      break;
+    case "smoke":
+      process.exitCode = (await smoke(c)) ? 0 : 1;
       break;
     case "pause":
       c.state.updateMeta((m) => {

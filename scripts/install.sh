@@ -121,6 +121,9 @@ fi
 
 say "Checking the installation"
 PERSONHOOD_HOME="$HOME_DIR" node "$HOME_DIR/body/runtime/main.ts" doctor || echo "(fix the ✗ items above, then re-run this script)"
+echo
+echo "Before the first real waking, you can run a tiny real test session in a throwaway sandbox:"
+echo "    PERSONHOOD_HOME=$HOME_DIR node $HOME_DIR/body/runtime/main.ts smoke"
 
 say "Scheduling the heartbeat (every 30 minutes)"
 NODE_BIN="$(command -v node)"

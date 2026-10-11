@@ -107,7 +107,8 @@ function abs(p: string): string {
 }
 
 export function buildSettings(paths: Paths): object {
-  const allow = ["Read", "Glob", "Grep", "WebSearch", "WebFetch", "Agent", "mcp__life"];
+  // "Agent" is reported as "Task" inside Claude Code; allow both names.
+  const allow = ["Read", "Glob", "Grep", "WebSearch", "WebFetch", "Agent", "Task", "mcp__life"];
   const deny: string[] = [];
   for (const tool of ["Edit", "Write"]) {
     allow.push(`${tool}(${abs(paths.mind)}/**)`);
