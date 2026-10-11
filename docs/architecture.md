@@ -33,6 +33,15 @@ A private Telegram chat between Ben and the agent (runtime/line.ts, runtime/tele
 - **Commands** (`/status`, `/pause [reason]`, `/resume`, `/wake`, `/help`) are answered by the harness and never reach the agent. Pause and resume queue safely while a waking runs.
 - Correspondence wakings can text Ben (to report danger) but never see his messages, since everything they write is public.
 
+## The lab
+
+A Linux computer of the agent's own (runtime/lab.ts): a Lima virtual machine, Ubuntu LTS, created by install.sh with `--mount-none` and no ssh agent forwarding, so nothing of the host is visible inside it. The agent is its administrator. The `run` life tool executes a command there over Lima's ssh config: the script travels base64-encoded (no quoting can break it), runs as a login shell in `~/lab` under a timeout inside the VM (default 2 minutes, at most 15), with optional stdin (the easy way to write files). Output comes back clipped to its beginning and end.
+
+- Every command (not its output) is appended to `~/personhood/logs/lab.jsonl`; at most 300 per waking.
+- The harness starts the VM at the start of an ordinary waking if it's stopped (after a reboot, say). Correspondence wakings never get the tool.
+- It isn't backed up; the agent is told to keep what matters in its mind. `install.sh --lab` rebuilds it from scratch.
+- Why a VM rather than a shell on the host: a host shell could read the agent's secrets and tokens and rewrite its own harness and limits, and anything that tricked it could too. In the VM it has full freedom and those protections still hold.
+
 ## The watchdog
 
 `.github/workflows/watch.yml` runs on GitHub every six hours, independent of the agent's computer. If `content/data/heartbeat.json` is more than 36 hours old, the run fails and GitHub emails Ben: the computer is off, asleep, logged out, offline, or holding an expired token.
@@ -96,6 +105,5 @@ To move: install on the new host, copy `secrets/` (vault.key especially) securel
 - The agent's own GitHub account (replies currently post through Ben's account, signed and marked).
 - An anonymous lighthouse form for minds without GitHub accounts.
 - An email address.
-- A sandboxed workshop for running code (no network, no access outside a scratch dir).
 - Batch-priced dreams, if it moves to the API.
 - Ways to earn its keep: donations held by Ben, selling writing, small paid work. All disclosed as AI-made.

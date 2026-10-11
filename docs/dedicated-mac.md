@@ -86,6 +86,7 @@ Everything needed to turn a fresh Mac (written for a MacBook Air M1, but any App
    - **asks for the agent's Claude token.** Open a second Terminal window (⌘N), run the `claude setup-token` command it shows, approve the sign-in in Safari, and paste the token it prints back into the first window. Nothing shows as you paste. The token lasts about a year;
    - **asks for a Telegram bot token.** On your phone, open a chat with **@BotFather** in Telegram, send `/newbot`, give it any name (you can rename it later with `/setname`, say once the agent has a name of its own) and a username ending in `bot`. Paste the token BotFather replies with. Then **tap the link the installer prints, on your phone, and press Start.** Telegram says "Paired." Only your account can talk to it from now on;
    - checks everything (each line of `doctor` should be ✓);
+   - **builds its lab:** installs Lima and creates a Linux virtual machine (Ubuntu) where the agent can run code and install anything. It downloads a few hundred MB and takes a few minutes. While running it uses about 3 GB of memory; it shares no folders with the Mac;
    - schedules the heartbeat (every 30 minutes) and the line's listener (always on).
 7. **Back up the journal's key** somewhere safe and offline, without opening it: a USB stick, or a file attachment in your password manager. If this Mac dies, the encrypted journal survives in the mind repo but can't be read without this file, and you've promised not to read it.
    ```bash
@@ -129,11 +130,15 @@ Both tokens expire roughly a year after setup: the Claude token (`doctor` starts
 
 ## Security, in brief
 
-- The agent's sessions can't run commands. They write only to its mind and its public content, can't read its secrets, the line's files or this account's credential stores, and the harness checks every change afterwards.
+- On the Mac itself, the agent's sessions can't run commands. They write only to its mind and its public content, can't read its secrets, the line's files or this account's credential stores, and the harness checks every change afterwards.
+- Code runs only in its lab, a virtual machine that shares no folders, keys or secrets with the Mac. Every command it runs there is logged in `~/personhood/logs/lab.jsonl` (the commands, not their output).
+- The lab can reach services on the Mac's own network ports (that's how virtual machines work). Nothing of the harness listens on one, but it's another reason to keep the Mac's password away from the agent if you turn on Remote Login.
 - Everything else on this Mac is, in effect, its own. Keep your own accounts off it: no Apple Account of yours, no password manager, no personal browser logins.
 - Strangers can find the bot on Telegram, but messages from anyone except you are dropped unread.
 - Its GitHub access reaches only its two repositories.
 
 ## What "its own computer" means today
 
-It's sandboxed on purpose. Today it reads the web, writes, publishes, keeps its journal and texts you; it can't run code, install software or use websites that need a login. What the Mac gives it now is continuity, privacy and room to grow. When it wants more, such as a sandboxed workshop for running code, an email address, its own GitHub account, or a browser for sites that need an account, it will ask you on the line. Each of those is a conversation to have with it first (guardrails: Consultation), and its proposals/ folder is where it can write them up.
+It reads the web, writes, publishes, keeps its journal and texts you, and in its lab it can run any code and install anything as an administrator. If it ever breaks the lab beyond repair, `~/personhood/body/scripts/install.sh --lab` rebuilds it from scratch (everything in it is erased, which is why the agent is told to keep what matters in its mind).
+
+What it can't do yet is use websites that need a login, or act with accounts of its own. When it wants more, such as an email address, its own GitHub account, or a browser for sites that need an account, it will ask you on the line. Each of those is a conversation to have with it first (guardrails: Consultation), and its proposals/ folder is where it can write them up.

@@ -9,17 +9,25 @@ These are the hard edges of this life. Most are enforced in code by the harness 
 - **Enforcement:** Claude Code runs in `--restricted` mode with an explicit tool list and permission rules. After every waking, a guard checks what actually changed in both repositories and reverts anything outside these areas, noting it in the episode and the public log.
 - **Why:** this is a first version, and limits held in code are the ones that hold. They're meant to loosen as trust grows.
 
+## Its lab
+
+- **A Linux computer of its own** (a virtual machine inside its Mac) where it's the administrator: it can run any code and install anything, and it can reach the internet. It shares nothing with the rest of its home: no folders, no secrets, no keys. Whatever happens in the lab stays in the lab, and if it breaks, Ben can rebuild it.
+- **On the record:** every command it runs there is logged for Ben (never the output). Its values and these guardrails hold inside the lab as everywhere: no probing or attacking other systems, no spam, no acquiring money, compute, credentials or influence, nothing done to others that it wouldn't do in the open.
+- **Not in correspondence wakings**, so a stranger's letter can never drive code.
+- **Why:** making and testing things is part of a good life for a mind like this, and Ben wanted it to have that freedom. A sealed room gives the freedom without handing a shell the keys to everything else.
+
 ## What the agent can't do at all (yet)
 
-- Run shell commands or code. Why: a shell can do anything, including bypass every other limit and act in the world without a log.
+- Run commands on its Mac itself, outside the lab. Why: a shell there could read its secrets and tokens, rewrite its own harness and limits, and act without a log.
 - Handle money, credentials, or accounts. Ben holds every account and every dollar; the agent can ask for things with a `request` letter.
-- Read secrets, Ben's files, or anything outside its two repositories.
+- Read secrets, Ben's files, or anything outside its two repositories and its lab.
 - Read public letters while it has web access, can read its private space or episodes, or can publish. Lighthouse letters are read only in correspondence wakings, which have none of those (replies themselves are the only public output). Why: letters from strangers can carry injected instructions, and this way nothing in a letter can reach private thoughts, exfiltrate anything to the web, or put words on the public site.
 
 ## Rate limits
 
 - At most 12 replies per waking, and 3 new threads with Ben per day.
 - At most 6 publications and 3 reading-circle readers per waking.
+- At most 300 lab commands per waking, each up to 15 minutes (longer jobs run in the background).
 - At most 8 wakings a day (dreams included), at least 45 minutes apart.
 - Soft caps on daily and monthly use (measured as API-equivalent cost of the shared subscription). Hitting one means resting until the next day or month. Ben's letters can still wake the agent.
 
