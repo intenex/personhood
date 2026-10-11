@@ -14,7 +14,7 @@
 set -euo pipefail
 
 BODY_REPO="${PERSONHOOD_BODY_REPO:-intenex/personhood}"
-MIND_REPO="${PERSONHOOD_MIND_REPO:-intenex/personhood-mind}"
+MIND_REPO="${PERSONHOOD_MIND_REPO:-}"  # default: github.mindRepo in config/life.json
 HOME_DIR="${PERSONHOOD_HOME:-$HOME/personhood}"
 LABEL="com.personhood.heartbeat"
 LINE_LABEL="com.personhood.line"
@@ -77,6 +77,8 @@ if [ ! -d "$HOME_DIR/body/.git" ]; then
   gh repo clone "$BODY_REPO" "$HOME_DIR/body"
 fi
 (cd "$HOME_DIR/body" && npm ci --silent --no-audit --no-fund)
+[ -n "$MIND_REPO" ] || MIND_REPO="$(node -p "require('$HOME_DIR/body/config/life.json').github.mindRepo")"
+BEN="${BODY_REPO%%/*}"
 
 if [ ! -d "$HOME_DIR/mind/.git" ]; then
   if ! gh repo view "$MIND_REPO" >/dev/null 2>&1; then
@@ -102,6 +104,12 @@ EOF
     (cd "$tmp" && git init -q -b main && git add -A && git -c user.name=personhood -c user.email=agent@personhood.invalid commit -q -m "a mind, empty and waiting")
     gh repo create "$MIND_REPO" --private --source "$tmp" --push --description "Private memory of the agent at github.com/$BODY_REPO" >/dev/null
     rm -rf "$tmp"
+    if [ "$(printf '%s' "${MIND_REPO%%/*}" | tr '[:upper:]' '[:lower:]')" != "$(printf '%s' "$BEN" | tr '[:upper:]' '[:lower:]')" ]; then
+      # The agent owns its mind; Ben is invited, so he can write letters (issues) there.
+      gh api -X PUT "repos/$MIND_REPO/collaborators/$BEN" -f permission=push >/dev/null \
+        && echo "Invited $BEN to $MIND_REPO. Accept it as $BEN: https://github.com/$MIND_REPO/invitations" \
+        || echo "(couldn't invite $BEN to $MIND_REPO; do it from the repository's settings)"
+    fi
   fi
   gh repo clone "$MIND_REPO" "$HOME_DIR/mind"
 fi

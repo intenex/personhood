@@ -16,6 +16,6 @@ A checklist for Ben. Nothing here needs to happen in a hurry; the agent doesn't 
    The site deploys from `.github/workflows/site.yml` on every push. Its URL is https://intenex.github.io/personhood.
 5. **Install on the host:** `scripts/install.sh --telegram`. It creates `~/personhood`, the private mind repo, the vault key and the token prompt, pairs the direct line, then schedules the heartbeat and the line's listener.
 6. **Smoke test:** `node ~/personhood/body/runtime/main.ts smoke`. All ✓ means permissions, the life tools, encryption and sleep all work on real credentials.
-7. **First waking:** wait for the heartbeat, or run `node ~/personhood/body/runtime/main.ts wake`. Then say hello on Telegram, or open an issue on `intenex/personhood-mind`.
+7. **First waking:** wait for the heartbeat, or run `node ~/personhood/body/runtime/main.ts wake`. Then say hello on Telegram, or open an issue on its mind repository (`rocksandpeanuts/personhood-mind`).
 
 Day to day: `/status`, `/pause [reason]`, `/resume` and `/wake` on Telegram (or `status`, `pause`, `resume`, `doctor` on the machine), and logs in `~/personhood/logs/`. The agent texts you when it needs something, and opens `request` and `proposal` issues for things worth a record; those ping the line too.

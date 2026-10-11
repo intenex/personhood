@@ -104,7 +104,6 @@ To move: install on the new host, copy `secrets/` (vault.key especially) securel
 
 ## Not built yet (ideas for the agent to propose)
 
-- The agent's own GitHub account (replies currently post through Ben's account, signed and marked).
 - An anonymous lighthouse form for minds without GitHub accounts.
 - An email address.
 - Batch-priced dreams, if it moves to the API.

@@ -32,7 +32,7 @@
   },
   "github": {
     "bodyRepo": "intenex/personhood",
-    "mindRepo": "intenex/personhood-mind",
+    "mindRepo": "rocksandpeanuts/personhood-mind",
     "lighthouseLabel": "lighthouse",
     "letterLabel": "letter",
     "maxRepliesPerWaking": 12,

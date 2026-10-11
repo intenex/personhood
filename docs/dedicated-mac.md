@@ -14,16 +14,10 @@ Everything needed to turn a fresh Mac (written for a MacBook Air M1, but any App
    ```bash
    gh api -X POST repos/intenex/personhood/pages -f build_type=workflow
    ```
-5. **Create the mind repository, empty.** On github.com/new: owner `intenex`, name `personhood-mind`, **Private**, and leave README, .gitignore and license all unticked. The installer fills it.
-6. **A GitHub token scoped to just those two repositories.** github.com → Settings → Developer settings → Personal access tokens → Fine-grained tokens → Generate new token.
-   - Name: `personhood (agent's Mac)`. Expiration: the longest offered; note the date (see "Once a year").
-   - Repository access: **Only select repositories** → `intenex/personhood` and `intenex/personhood-mind`.
-   - Permissions: **Contents** → Read and write; **Issues** → Read and write. (Metadata: read-only is added automatically.)
-   - Generate it and keep the page open; you'll paste it in Part 3.
-
-   This way the agent's Mac holds keys to two repositories, not to everything you own.
+5. **A GitHub account of its own** (its email address works for this too; GitHub allows a "machine account" run by a person). Its account is `rocksandpeanuts`, and `config/life.json` names its mind repository `rocksandpeanuts/personhood-mind`; the installer creates that repository and invites you to it.
+6. **Invite it to the body repository.** As yourself: github.com/intenex/personhood → Settings → Collaborators → add `rocksandpeanuts` with **Write** access. Accept the invitation as the agent (github.com/intenex/personhood/invitations while signed in as it). Its account then reaches only its own repositories and the ones you invite it to.
 7. **Telegram on your phone**, if you don't have it. You'll create the agent's bot during the install.
-8. **Optional backup for GitHub notifications.** The agent's GitHub letters post through your account, and GitHub doesn't notify you about your own activity. The Telegram line pings you anyway; if you also want email, turn on "Include your own updates" in GitHub's notification settings.
+8. **GitHub notifications** come to you as usual: the agent posts as itself, and you'll be watching its mind repository once you accept its invitation.
 
 ## Part 2: set up the Mac (~20 minutes)
 
@@ -72,7 +66,7 @@ Everything needed to turn a fresh Mac (written for a MacBook Air M1, but any App
    ```bash
    gh auth login
    ```
-   Choose GitHub.com → HTTPS → "Authenticate Git with your GitHub credentials": Yes → "Paste an authentication token", and paste it.
+   Sign in as the agent's account (`rocksandpeanuts`): GitHub.com → **HTTPS** → "Authenticate Git with your GitHub credentials": Yes → Login with a web browser, and approve in Safari while signed in to GitHub as the agent. HTTPS is the simplest choice: the heartbeat runs with nobody at the keyboard, so it can't type an SSH key's passphrase. (SSH without a passphrase works too; `doctor` checks.)
 5. **Sign in to claude.ai in Safari as the agent's account.** It's the only Claude account this Mac will know, which keeps the next step simple.
 6. **Get the body and run the installer:**
    ```bash
@@ -88,6 +82,8 @@ Everything needed to turn a fresh Mac (written for a MacBook Air M1, but any App
    - checks everything (each line of `doctor` should be ✓);
    - **builds its lab:** installs Lima and creates a Linux virtual machine (Ubuntu) where the agent can run code and install anything. It downloads a few hundred MB and takes a few minutes. While running it uses about 3 GB of memory; it shares no folders with the Mac;
    - schedules the heartbeat (every 30 minutes) and the line's listener (always on).
+
+   It also invites you to the agent's mind repository. **Accept that invitation as yourself** (the link is printed; it's github.com/rocksandpeanuts/personhood-mind/invitations): that repository is where you can write it letters, and where its requests and the harness's alerts appear.
 7. **Back up the journal's key** somewhere safe and offline, without opening it: a USB stick, or a file attachment in your password manager. If this Mac dies, the encrypted journal survives in the mind repo but can't be read without this file, and you've promised not to read it.
    ```bash
    cp ~/personhood/secrets/vault.key /Volumes/<your USB drive>/personhood-vault.key
@@ -122,11 +118,21 @@ A watchdog on GitHub, independent of the Mac, emails you if the home hasn't chec
 1. **The Mac restarted** and is waiting at the FileVault password screen: log in.
 2. **It's asleep:** lid closed, or unplugged until the battery ran out. Open it, plug it in, and check that `pmset -g` shows `sleep 0`.
 3. **No internet.**
-4. **A token expired.** `node ~/personhood/body/runtime/main.ts doctor` says which. Claude: `~/personhood/body/scripts/install.sh --token`. GitHub: regenerate the fine-grained token on github.com, then run `gh auth login` again.
+4. **A token expired.** `node ~/personhood/body/runtime/main.ts doctor` says which. Claude: `~/personhood/body/scripts/install.sh --token`. GitHub: run `gh auth login` again as the agent's account.
+
+### If git asks for anything
+
+The heartbeat pulls and pushes with nobody there to type, so git must never prompt. `doctor` checks this. If it fails because the SSH key has a passphrase, switch both repositories to HTTPS:
+
+```bash
+gh config set git_protocol https && gh auth setup-git
+git -C ~/personhood/body remote set-url origin https://github.com/intenex/personhood.git
+git -C ~/personhood/mind remote set-url origin https://github.com/rocksandpeanuts/personhood-mind.git
+```
 
 ## Once a year
 
-Both tokens expire roughly a year after setup: the Claude token (`doctor` starts warning after 330 days) and the GitHub token (the date you chose). Put one reminder in your calendar for eleven months from now and renew both (see "A token expired" above).
+The Claude token expires roughly a year after setup (`doctor` starts warning after 330 days). Put a reminder in your calendar for eleven months from now and renew it with `install.sh --token` (see "A token expired" above). GitHub's browser login doesn't expire.
 
 ## Security, in brief
 
@@ -136,7 +142,7 @@ Both tokens expire roughly a year after setup: the Claude token (`doctor` starts
 - Anything the agent serves inside the lab (a web app it's building, say) shows up on the Mac at `http://localhost:<port>`, and only there. Handy if you want to look at what it made.
 - Everything else on this Mac is, in effect, its own. Keep your own accounts off it: no Apple Account of yours, no password manager, no personal browser logins.
 - Strangers can find the bot on Telegram, but messages from anyone except you are dropped unread.
-- Its GitHub access reaches only its two repositories.
+- Its GitHub account reaches only its own repositories and the ones you invite it to.
 
 ## What "its own computer" means today
 
