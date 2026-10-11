@@ -13,6 +13,8 @@ export interface Stimuli {
   unread: Letter[];
   spentToday: number;
   spentMonth: number;
+  /** Episodes recorded since the last dream (nothing new means no need to dream). */
+  episodesSinceDream?: number;
   timeZone?: string;
 }
 
@@ -82,7 +84,8 @@ export function decide(cfg: LifeConfig, s: Stimuli): Decision {
   }
 
   const hour = localHour(s.now, s.timeZone);
-  if (daysSince(m.lastDream) * 24 >= r.dreamEveryHours && hour >= r.dreamEarliestLocalHour && hour < r.dreamLatestLocalHour && bornDays >= 0.5) {
+  const somethingToDream = (s.episodesSinceDream ?? 1) > 0;
+  if (somethingToDream && daysSince(m.lastDream) * 24 >= r.dreamEveryHours && hour >= r.dreamEarliestLocalHour && hour < r.dreamLatestLocalHour && bornDays >= 0.5) {
     return { ...base, wake: true, mode: "dream", effort: cfg.brain.dreamEffort, reasons: ["Night. Time to dream: consolidate the day into memory."], why: "dream" };
   }
 

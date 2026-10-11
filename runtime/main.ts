@@ -14,12 +14,12 @@ import path from "node:path";
 import YAML from "yaml";
 import { authPreflight, brainEnv, buildWakeArgs, findTranscript, newSessionId, runClaude, type WakeMode } from "./brain.ts";
 import { loadConfig, loadInstruments, resolvePaths, type LifeConfig, type Paths, type Instruments } from "./config.ts";
-import { condenseTranscript, saveTranscript, writeEpisode } from "./episodes.ts";
+import { condenseTranscript, episodesSince, saveTranscript, writeEpisode } from "./episodes.ts";
 import { GitHub, resolveGitHubToken, type GitHubLike } from "./github.ts";
 import { enforce, isBodyPathAllowed, isMindPathAllowed } from "./guard.ts";
 import { agentAuthor, commit, isRepo, pull, sync } from "./git.ts";
 import { describeResources, Ledger } from "./ledger.ts";
-import { syncLetters, unreadLetters } from "./letters.ts";
+import { markPresented, syncLetters, unreadLetters } from "./letters.ts";
 import { sessionActions, type Session, type SleepRecord } from "./life-tools.ts";
 import { log, setLogDir } from "./log.ts";
 import { runProbe } from "./probe.ts";
@@ -87,13 +87,15 @@ async function tick(c: Ctx): Promise<void> {
     }
   }
   const now = new Date();
+  const meta = c.state.meta();
   const decision = decide(c.cfg, {
     now,
-    meta: c.state.meta(),
+    meta,
     alarms: c.state.alarms(),
     unread: unreadLetters(c.state),
     spentToday: c.ledger.spentToday(now),
     spentMonth: c.ledger.spentThisMonth(now),
+    episodesSinceDream: episodesSince(c.paths.mind, meta.lastDream).length,
   });
   if (!decision.wake) {
     log(`asleep: ${decision.why}`);
@@ -154,6 +156,7 @@ export async function wake(c: Ctx, decision: Decision): Promise<void> {
   const metaSnapshot = state.meta();
   exportPublicData(cfg, paths, state, c.ledger, true);
 
+  const presentedLetters = unreadLetters(state).filter((l) => l.channel === "lighthouse").map((l) => l.id);
   const resourcesText = describeResources(cfg, c.ledger.spentToday(start), c.ledger.spentThisMonth(start)).text;
   const sys = systemPrompt(cfg, paths, decision.mode);
   const prompt = wakingPrompt({
@@ -212,8 +215,9 @@ export async function wake(c: Ctx, decision: Decision): Promise<void> {
   const outcome = sleep ? "slept" : res.limitResetAt ? "interrupted by usage limit" : res.subtype === "error_max_turns" ? "reached the turn limit" : res.subtype.includes("budget") ? "reached the waking's budget" : res.ok ? "ended without calling sleep" : `ended with an error (${res.subtype})`;
   if (!sleep) notes.push(`this waking ${outcome}`);
 
-  // Alarms that woke us are spent.
+  // Alarms that woke us are spent; public letters shown in a correspondence waking count as seen.
   if (decision.alarmIds.length) state.removeAlarms(decision.alarmIds);
+  if (decision.mode === "correspondence") markPresented(state, presentedLetters, end);
 
   if (sleep) appendJsonl(path.join(paths.mind, "instruments", "affect.jsonl"), sleep.checkIn);
   writeEpisode(paths.mind, {

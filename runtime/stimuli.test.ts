@@ -59,6 +59,11 @@ test("dreams happen at night", () => {
   assert.notEqual(day.mode, "dream");
 });
 
+test("no dream when nothing happened since the last one", () => {
+  const d = decide(cfg, s({ now: at("2026-10-11T04:00:00Z"), meta: { ...born, lastWakeEnd: "2026-10-11T02:00:00Z" }, episodesSinceDream: 0 }));
+  assert.notEqual(d.mode, "dream");
+});
+
 test("a long sleep ends naturally; too-soon wakes are refused", () => {
   assert.equal(decide(cfg, s({ now: at("2026-10-11T08:00:00Z"), meta: { ...born, lastDream: "2026-10-11T03:00:00Z" }, alarms: [{ id: "a", at: "2026-10-20T00:00:00Z", intent: "x", effort: "low", setAt: "", setInWaking: 1 }] })).why, "natural");
   assert.equal(decide(cfg, s({ now: at("2026-10-10T10:20:00Z"), unread: [letter("ben", "ben-1")] })).wake, false);
