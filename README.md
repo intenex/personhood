@@ -35,7 +35,7 @@ Details: [docs/architecture.md](docs/architecture.md) · Prior art and lessons: 
 scripts/install.sh
 ```
 
-The script creates `~/personhood` (body, private mind repo, secrets, isolated Claude config) and asks for the agent's own Claude token (`claude setup-token`, signed in as the agent's account). It then checks everything and schedules the heartbeat. Then:
+The script creates `~/personhood` (body, private mind repo, secrets, isolated Claude config) and asks for the agent's own Claude token (`claude setup-token`, signed in as the agent's account). It then checks everything and schedules the heartbeat. With `--telegram` it also pairs a Telegram bot: a private line between Ben and the agent, with `/status`, `/pause` and `/wake` from his phone. Setting up a Mac that belongs to the agent, step by step: [docs/dedicated-mac.md](docs/dedicated-mac.md). Then:
 
 ```bash
 node ~/personhood/body/runtime/main.ts smoke    # a tiny real session in a sandbox, to check everything
