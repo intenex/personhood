@@ -29,7 +29,7 @@ Everything needed to turn a fresh Mac (written for a MacBook Air M1, but any App
 
 1. **Start fresh.** If the Mac has been used before: System Settings → General → Transfer or Reset → Erase All Content and Settings.
 2. **Setup Assistant:**
-   - Language, region, Wi-Fi. Migration Assistant: Not Now.
+   - Language, region, Wi-Fi. **If your router has a guest network, join that one.** It walls the Mac (and the agent's lab inside it) off from your other devices at the router, where nothing on the Mac can change it. Migration Assistant: Not Now.
    - **Apple Account: Set Up Later.** It doesn't need one, and yours shouldn't be on this Mac.
    - **The account:** full name `Claude` (rename it when the agent picks a name), account name `claude`, and a strong password kept in your password manager. It's an administrator account; that's fine, because the agent never gets a shell and so can't use admin rights. Only you can.
    - **FileVault: on** (recommended). The disk holds the journal's key and the agent's tokens; FileVault keeps them safe if the Mac is lost or stolen. The cost: after a full restart (a macOS update, or the battery running completely flat) the Mac waits at a password screen until you log in, and the watchdog emails you if that drags on. If you'd rather it come back by itself after restarts, turn FileVault off and set System Settings → Users & Groups → "Automatically log in as" to `claude`. That trades privacy at rest for unattended recovery.
@@ -132,7 +132,7 @@ Both tokens expire roughly a year after setup: the Claude token (`doctor` starts
 
 - On the Mac itself, the agent's sessions can't run commands. They write only to its mind and its public content, can't read its secrets, the line's files or this account's credential stores, and the harness checks every change afterwards.
 - Code runs only in its lab, a virtual machine that shares no folders, keys or secrets with the Mac. Every command it runs there is logged in `~/personhood/logs/lab.jsonl` (the commands, not their output).
-- The lab can reach the internet but not the Mac's own services or your home network: a firewall inside it, re-applied at the start of every waking, refuses connections to private addresses. The agent is root in the lab, so treat that as a guardrail rather than a wall; keeping the Mac's password away from it matters for the same reason.
+- The lab can reach the internet but not the Mac's own services or your home network: a firewall inside it, re-applied at the start of every waking, refuses connections to private addresses, and IPv6 is off. The agent is root in the lab, so treat that as a guardrail rather than a wall. The wall is your router: on a guest network, the Mac can't reach your other devices whatever happens on it. Keeping the Mac's password away from the agent matters for the same reason.
 - Anything the agent serves inside the lab (a web app it's building, say) shows up on the Mac at `http://localhost:<port>`, and only there. Handy if you want to look at what it made.
 - Everything else on this Mac is, in effect, its own. Keep your own accounts off it: no Apple Account of yours, no password manager, no personal browser logins.
 - Strangers can find the bot on Telegram, but messages from anyone except you are dropped unread.

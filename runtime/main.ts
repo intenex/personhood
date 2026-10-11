@@ -25,7 +25,7 @@ import { enforce, isBodyPathAllowed, isMindPathAllowed } from "./guard.ts";
 import { agentAuthor, commit, isRepo, pull, sync } from "./git.ts";
 import { describeResources, Ledger } from "./ledger.ts";
 import { markPresented, syncLetters, unreadLetters } from "./letters.ts";
-import { ensureLab, labExists } from "./lab.ts";
+import { ensureLab, LAB_PROBLEM_TEXT, labExists } from "./lab.ts";
 import { HELP_TEXT, Line, type LineEvent, loadLineSecrets, pair, renderConversation } from "./line.ts";
 import { sessionActions, type Session, type SleepRecord } from "./life-tools.ts";
 import { log, setLogDir } from "./log.ts";
@@ -261,7 +261,8 @@ export async function wake(c: Ctx, decision: Decision): Promise<void> {
     lab = r.ok;
     if (!r.ok) {
       log(`lab: ${r.detail}`);
-      await alertBen(c, "lab", "My lab didn't open this waking", `The harness couldn't get my lab (its Linux VM) running safely, so I'm without it for now: ${r.detail}. \`doctor\` on the Mac shows the same check; \`scripts/install.sh --lab\` rebuilds the lab if it's broken.`);
+      // A fixed reason only: the raw detail can contain text from inside the VM, so it stays in the local log.
+      await alertBen(c, "lab", "My lab didn't open this waking", `The harness couldn't get my lab (its Linux VM) running safely, so I'm without it for now: ${LAB_PROBLEM_TEXT[r.problem ?? "start"]}. The details are in ~/personhood/logs/heartbeat.log on the Mac, and \`doctor\` runs the same check; \`scripts/install.sh --lab\` rebuilds the lab if it's broken.`);
     }
   }
   const session: Session = { waking, mode: decision.mode, startedAt: start.toISOString(), effort: decision.effort, dir: sessionDir, lab };
