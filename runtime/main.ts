@@ -259,7 +259,10 @@ export async function wake(c: Ctx, decision: Decision): Promise<void> {
   if (decision.mode !== "correspondence" && labExists(cfg)) {
     const r = ensureLab(cfg);
     lab = r.ok;
-    if (!r.ok) log(`lab: ${r.detail}`);
+    if (!r.ok) {
+      log(`lab: ${r.detail}`);
+      await alertBen(c, "lab", "My lab didn't open this waking", `The harness couldn't get my lab (its Linux VM) running safely, so I'm without it for now: ${r.detail}. \`doctor\` on the Mac shows the same check; \`scripts/install.sh --lab\` rebuilds the lab if it's broken.`);
+    }
   }
   const session: Session = { waking, mode: decision.mode, startedAt: start.toISOString(), effort: decision.effort, dir: sessionDir, lab };
   writeJson(path.join(sessionDir, "session.json"), session);

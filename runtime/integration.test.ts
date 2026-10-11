@@ -192,7 +192,7 @@ test("the lab: an ordinary waking gets it and its commands are logged; correspon
   const script = JSON.stringify([{ tool: "run", args: { command: "cat > note.txt", stdin: "made in the lab" } }]);
   run(["wake", "ordinary", "trying the lab"], { ...env, FAKE_SCRIPT: script });
   assert.equal(fs.readFileSync(path.join(labHome, "lab", "note.txt"), "utf8"), "made in the lab");
-  assert.match(fs.readFileSync(path.join(paths.logs, "lab.jsonl"), "utf8"), /"command":"cat > note.txt"/);
+  assert.match(fs.readFileSync(path.join(paths.logs, "lab.jsonl"), "utf8"), /"command":\{"text":"cat > note.txt"[^}]*\},"stdin":\{"text":"made in the lab"/);
   const w2 = fs.readdirSync(paths.run).find((d) => d.endsWith("-w2"))!;
   assert.match(fs.readFileSync(path.join(paths.run, w2, "system-prompt.md"), "utf8"), /\*\*Your lab\*\* is a Linux computer of your own/);
   new MindState(paths.mind).updateMeta((m) => {

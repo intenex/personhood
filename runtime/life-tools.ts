@@ -307,8 +307,17 @@ export async function run(ctx: ToolContext, a: { command: string; stdin?: string
   const command = text(a.command, "command", 200_000);
   const r = await runInLab(ctx.cfg, { command, stdin: a.stdin, timeoutSeconds: a.timeout_seconds });
   logAction(ctx, { tool: "run", summary: "ran code in the lab", public: false, writes: [], external: true });
-  // Actions in the world are on the record: the command (never its output) is logged for Ben.
-  appendJsonl(path.join(ctx.paths.logs, "lab.jsonl"), { t: ctx.now().toISOString(), waking: ctx.session.waking, command: clip(command, 2000), exit: r.exitCode, seconds: r.seconds });
+  // Actions in the world are on the record: what was run, including anything piped into it
+  // (a script fed to an interpreter is the real command), is logged for Ben. Never the output.
+  const record = (v: string, keep: number) => ({ text: v.slice(0, keep), chars: v.length, clipped: v.length > keep, sha256: crypto.createHash("sha256").update(v).digest("hex") });
+  appendJsonl(path.join(ctx.paths.logs, "lab.jsonl"), {
+    t: ctx.now().toISOString(),
+    waking: ctx.session.waking,
+    command: record(command, 8000),
+    ...(a.stdin ? { stdin: record(a.stdin, 8000) } : {}),
+    exit: r.exitCode,
+    seconds: r.seconds,
+  });
   const both = !!(r.stdout && r.stderr);
   const room = both ? Math.floor(s.outputChars / 2) : s.outputChars;
   const parts = [`exit ${r.exitCode ?? "(none)"}${r.timedOut ? " (timed out)" : ""} · ${r.seconds}s`];

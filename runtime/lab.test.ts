@@ -70,10 +70,16 @@ test("the run tool: output for the agent, the command (not the output) on the re
   assert.match(out, /--- stdout ---\nbuilt/);
   assert.match(out, /--- stderr ---\nwarned/);
   const record = fs.readFileSync(path.join(ctx.paths.logs, "lab.jsonl"), "utf8");
-  assert.match(record, /"command":"echo built; echo warned >&2"/);
+  assert.match(record, /"command":\{"text":"echo built; echo warned >&2"/);
   assert.match(record, /"waking":4/);
   assert.doesNotMatch(record, /"built"|warned"/, "output isn't logged");
-  ctx.cfg.lab = { ...ctx.cfg.lab, maxCommandsPerWaking: 1 };
+  // A script piped into an interpreter is logged too: it's the real command.
+  await run(ctx, { command: "bash", stdin: "echo from a piped script" });
+  const second = JSON.parse(fs.readFileSync(path.join(ctx.paths.logs, "lab.jsonl"), "utf8").trim().split("\n")[1]);
+  assert.equal(second.stdin.text, "echo from a piped script");
+  assert.equal(second.stdin.clipped, false);
+  assert.match(second.stdin.sha256, /^[0-9a-f]{64}$/);
+  ctx.cfg.lab = { ...ctx.cfg.lab, maxCommandsPerWaking: 2 };
   await assert.rejects(run(ctx, { command: "true" }), /the limit/);
 });
 
