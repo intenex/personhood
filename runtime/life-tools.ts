@@ -13,7 +13,8 @@ import { clipOutput, labSettings, runInLab } from "./lab.ts";
 import type { Line } from "./line.ts";
 import { markRead, parseLetterId, postingViaBen, renderThread, repoFor, signReply, unreadLetters } from "./letters.ts";
 import { type CheckIn, MindState, isUnread, shortId } from "./state.ts";
-import { appendJsonl, clip, ensureDir, localDateKey, readJson, readJsonl, safeJoin, slugify, writeJson, writeText } from "./util.ts";
+import { appendJsonl, clip, describeLocal, ensureDir, localDateKey, readJson, readJsonl, safeJoin, slugify, writeJson, writeText } from "./util.ts";
+import { describePlan, loadPlan } from "./plan.ts";
 import { Vault } from "./vault.ts";
 import { AGENT_MARKER } from "./github.ts";
 
@@ -512,9 +513,18 @@ export async function readingCircle(ctx: ToolContext, a: { path: string; prompt?
 
 export function resources(ctx: ToolContext): string {
   const ledger = new Ledger(ctx.state.mind);
-  const r = describeResources(ctx.cfg, ledger.spentToday(ctx.now()), ledger.spentThisMonth(ctx.now()));
-  const recent = ledger.month(ctx.now()).slice(-5).map((e) => `waking #${e.waking} (${e.mode}) ≈ $${e.costUsd.toFixed(2)}, ${e.turns} turns`);
-  return [`Resources: ${r.text}`, recent.length ? `Recent wakings:\n${recent.join("\n")}` : ""].filter(Boolean).join("\n\n");
+  const now = ctx.now();
+  const plan = loadPlan(ctx.state.mind);
+  const r = describeResources(ctx.cfg, ledger.spentToday(now), ledger.spentThisMonth(now), describePlan(ctx.cfg, plan, ledger, now));
+  const windows = Object.entries(plan.windows).map(
+    ([type, w]) => `${type}: ${w.status}${w.utilization !== undefined ? `, about ${Math.round(w.utilization * 100)}% used` : ""}${w.resetsAt ? `, renews ${describeLocal(new Date(w.resetsAt))}` : ""} (as of ${describeLocal(new Date(w.seenAt))})`,
+  );
+  const recent = ledger.month(now).slice(-5).map((e) => `waking #${e.waking} (${e.mode}) ≈ $${e.costUsd.toFixed(2)}, ${e.turns} turns`);
+  return [
+    `Resources: ${r.text}`,
+    windows.length ? `What the plan last reported (Claude Code reports it during wakings, so it's as fresh as your last one):\n${windows.join("\n")}` : "",
+    recent.length ? `Recent wakings:\n${recent.join("\n")}` : "",
+  ].filter(Boolean).join("\n\n");
 }
 
 // Exposed for the harness and tests.

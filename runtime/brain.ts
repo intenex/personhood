@@ -15,6 +15,7 @@ import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { BODY_AGENT_WRITABLE, type Effort, type LifeConfig, MIND_HARNESS_ONLY, type Paths } from "./config.ts";
+import { type RateLimitInfo, rateLimitInfos } from "./plan.ts";
 import { ensureDir, writeJson } from "./util.ts";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -46,6 +47,8 @@ export interface BrainResult {
   exitCode: number | null;
   /** The final result event, for fields like structured_output. */
   raw: any;
+  /** What Claude Code reported about the plan's usage windows during the session. */
+  rateLimits: RateLimitInfo[];
 }
 
 export interface AuthInfo {
@@ -312,6 +315,7 @@ export function parseResult(stdout: string, stderr: string, exitCode: number | n
     stderr: stderr.slice(-4000),
     exitCode,
     raw: json,
+    rateLimits: rateLimitInfos(events),
   };
 }
 

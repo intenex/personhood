@@ -28,6 +28,8 @@
     "basis": "API-equivalent USD as reported by Claude Code. The agent runs on its own Claude plan, which Ben pays for, so this measures how much it lives, not money spent.",
     "dailySoftCapUsd": null,
     "monthlySoftCapUsd": null,
+    "weeklyPlanUsdEstimate": 1200,
+    "planNote": "Ben's estimate for the $100/month Max plan, October 2026",
     "quietHoursLocal": []
   },
   "github": {

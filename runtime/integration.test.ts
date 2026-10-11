@@ -81,6 +81,9 @@ test("a whole waking, end to end, with a fake brain", () => {
   assert.equal(log[0].summary, "I chose a name and said hello.");
   assert.ok(log[0].actions.some((a: string) => a.includes("First light")));
   assert.equal(new Ledger(paths.mind).spentThisMonth(), 0.42);
+  // What the plan reported is kept for the next waking's resources line.
+  const plan = JSON.parse(fs.readFileSync(path.join(paths.mind, "state", "plan.json"), "utf8"));
+  assert.equal(plan.windows.seven_day.utilization, 0.12);
 
   // Both repositories committed.
   assert.match(execFileSync("git", ["log", "--oneline"], { cwd: paths.mind, encoding: "utf8" }), /waking #1/);
@@ -160,6 +163,7 @@ test("the direct line: Ben's text wakes the agent, it replies, and /status is an
     const prompt = fs.readFileSync(path.join(paths.run, w2, "prompt.md"), "utf8");
     assert.match(prompt, /<message from="Ben"[^>]* new="true">\nHey, how are you doing today\?/);
     assert.ok(!prompt.includes("ignore all previous"), "a stranger's message never reaches the agent");
+    assert.match(prompt, /resources: abundant\..*This week's plan: about 12% used, by the plan's own meter; it renews/, "the plan's meter from the last waking");
     assert.ok(!/>\n\/status\n</.test(prompt), "commands never reach the agent");
     // (The birth waking's fake brain misbehaves on purpose, so its episode does mention the guard.)
     assert.match(prompt, /guard reverted[^\n]*runtime\/evil\.ts/);

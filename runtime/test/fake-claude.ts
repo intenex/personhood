@@ -76,6 +76,7 @@ if (process.env.CLAUDE_CONFIG_DIR) {
 
 const out = [
   { type: "system", subtype: "init", session_id: sessionId, tools },
+  { type: "rate_limit_event", rate_limit_info: { status: "allowed", rateLimitType: "seven_day", utilization: 0.12, resetsAt: Math.floor(Date.now() / 1000) + 3 * 86400 }, session_id: sessionId },
   { type: "result", subtype: "success", is_error: false, result: "Slept.", total_cost_usd: 0.42, duration_ms: 1234, num_turns: 7, session_id: sessionId, modelUsage: { "claude-opus-5-5": { inputTokens: 1000, outputTokens: 500, cacheReadInputTokens: 9000, cacheCreationInputTokens: 2000, costUSD: 0.42 } } },
 ];
 process.stdout.write(out.map((o) => JSON.stringify(o)).join("\n") + "\n");

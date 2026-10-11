@@ -50,6 +50,10 @@ export interface LifeConfig {
     /** null: no cap of the harness's own; the plan's limits are the only limits. */
     dailySoftCapUsd: number | null;
     monthlySoftCapUsd: number | null;
+    /** Roughly what the plan allows per week, in API-equivalent USD (Ben's estimate; plans change). */
+    weeklyPlanUsdEstimate?: number;
+    /** Where that estimate comes from, in a few words. */
+    planNote?: string;
     quietHoursLocal: number[];
   };
   github: {

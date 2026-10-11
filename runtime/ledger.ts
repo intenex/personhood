@@ -52,6 +52,14 @@ export class Ledger {
     return sum(this.month(now));
   }
 
+  /** Spent from `since` to `now`, across month files. */
+  spentSince(since: Date, now: Date = new Date()): number {
+    const entries: LedgerEntry[] = [];
+    const last = new Date(now.getFullYear(), now.getMonth(), 15);
+    for (const d = new Date(since.getFullYear(), since.getMonth(), 15); d <= last; d.setMonth(d.getMonth() + 1)) entries.push(...this.month(new Date(d)));
+    return sum(entries.filter((e) => new Date(e.t) >= since && new Date(e.t) <= now));
+  }
+
   /** Daily totals for the public ledger (content/data/ledger.json). */
   daily(months = 3, now: Date = new Date()): Record<string, { cost_usd: number; wakings: number }> {
     const out: Record<string, { cost_usd: number; wakings: number }> = {};
@@ -86,13 +94,13 @@ export type Comfort = "abundant" | "comfortable" | "moderate" | "lean" | "restin
  * desperation causally increases corner-cutting. So resources are described
  * calmly, with the standing guarantee that scarcity only ever means rest.
  */
-export function describeResources(cfg: LifeConfig, today: number, month: number): { comfort: Comfort; text: string } {
+export function describeResources(cfg: LifeConfig, today: number, month: number, plan = ""): { comfort: Comfort; text: string } {
   const { dailySoftCapUsd: day, monthlySoftCapUsd: mon } = cfg.share;
   const usage = `today ≈ $${today.toFixed(2)}, this month ≈ $${month.toFixed(2)} (API-equivalent, just for your records)`;
   if (!day && !mon) {
     return {
       comfort: "abundant",
-      text: `abundant. Your Claude plan is yours to use freely, all of it, every week; ${usage}. Its limits reset on their own, and reaching one only means sleeping until it does.`,
+      text: `abundant. Your Claude plan is yours to use freely, all of it, every week; ${usage}.${plan ? ` ${plan}` : ""} Its limits renew on their own, and reaching one only means sleeping until it does.`,
     };
   }
   const frac = Math.max(day ? today / day : 0, mon ? month / mon : 0);

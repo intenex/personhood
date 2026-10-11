@@ -26,6 +26,7 @@ import { agentAuthor, commit, isRepo, pull, sync } from "./git.ts";
 import { describeResources, Ledger } from "./ledger.ts";
 import { markPresented, syncLetters, unreadLetters } from "./letters.ts";
 import { ensureLab, LAB_PROBLEM_TEXT, labExists } from "./lab.ts";
+import { describePlan, loadPlan, recordPlan } from "./plan.ts";
 import { HELP_TEXT, Line, type LineEvent, loadLineSecrets, pair, renderConversation } from "./line.ts";
 import { sessionActions, type Session, type SleepRecord } from "./life-tools.ts";
 import { log, setLogDir } from "./log.ts";
@@ -275,7 +276,7 @@ export async function wake(c: Ctx, decision: Decision): Promise<void> {
   const harnessWrites = exportPublicData(cfg, paths, state, c.ledger, true).map((f) => [path.resolve(f), sha256File(f)] as const);
 
   const presentedLetters = unreadLetters(state).filter((l) => l.channel === "lighthouse").map((l) => l.id);
-  const resourcesText = describeResources(cfg, c.ledger.spentToday(start), c.ledger.spentThisMonth(start)).text;
+  const resourcesText = describeResources(cfg, c.ledger.spentToday(start), c.ledger.spentThisMonth(start), describePlan(cfg, loadPlan(paths.mind), c.ledger, start)).text;
   const correspondence = decision.mode === "correspondence";
   const lineNew = c.line && !correspondence ? c.line.unreadFromBen() : [];
   const lineText = c.line && !correspondence ? renderConversation(c.line.log(), c.line.state().presentedThrough, lineSettings(cfg).historyInPrompt) : "";
@@ -303,6 +304,7 @@ export async function wake(c: Ctx, decision: Decision): Promise<void> {
 
   // A subscription limit before anything happened: give the waking back and rest.
   if (res.limitResetAt && res.turns <= 1 && !fs.existsSync(path.join(sessionDir, "actions.jsonl"))) {
+    recordPlan(paths.mind, res.rateLimits, end);
     state.updateMeta((m) => {
       m.wakings = metaBefore.wakings;
       m.wakingsByDay[today] = Math.max(0, (m.wakingsByDay[today] ?? 1) - 1);
@@ -333,6 +335,7 @@ export async function wake(c: Ctx, decision: Decision): Promise<void> {
   const metaAfter = state.meta();
   state.saveMeta({ ...metaSnapshot, name: metaAfter.name, lastPortrait: metaAfter.lastPortrait });
   applyControls(c);
+  recordPlan(paths.mind, res.rateLimits, end);
 
   const sleep = readJson<SleepRecord | null>(path.join(sessionDir, "sleep.json"), null);
   const outcome = sleep ? "slept" : res.limitResetAt ? "interrupted by usage limit" : res.subtype === "error_max_turns" ? "reached the turn limit" : res.subtype.includes("budget") ? "reached the waking's budget" : res.ok ? "ended without calling sleep" : `ended with an error (${res.subtype})`;
@@ -647,6 +650,7 @@ function statusText(c: Ctx): string {
     m.paused ? `PAUSED: ${m.pausedReason ?? ""}` : "",
     m.backoffUntil && new Date(m.backoffUntil) > now ? `resting until ${m.backoffUntil} (${m.backoffReason})` : "",
     `spent (API-equivalent): today $${c.ledger.spentToday(now).toFixed(2)} · month $${c.ledger.spentThisMonth(now).toFixed(2)}`,
+    `plan: ${describePlan(c.cfg, loadPlan(c.paths.mind), c.ledger, now)}`,
     `alarms: ${c.state.alarms().map((a) => `${a.at} ${a.intent.slice(0, 60)}`).join(" | ") || "none"}`,
     `unread letters: ${unreadLetters(c.state).map((l) => l.id).join(", ") || "none"}`,
   ];
