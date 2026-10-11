@@ -216,4 +216,8 @@ test("the agent can't read or write the line's files directly", () => {
   const s = buildSettings(paths) as { permissions: { deny: string[] } };
   assert.ok(s.permissions.deny.includes(`Read(/${paths.line}/**)`));
   assert.ok(s.permissions.deny.includes(`Write(/${paths.line}/**)`));
+  // Its mirror in the mind (state/line.jsonl) is readable in ordinary wakings, never in correspondence.
+  const corr = buildSettings(paths, "correspondence") as { permissions: { allow: string[]; deny: string[] } };
+  assert.ok(corr.permissions.deny.includes(`Read(/${paths.mind}/state/**)`));
+  assert.ok(!corr.permissions.allow.some((r) => r === "Read" || r.includes("/state")));
 });
