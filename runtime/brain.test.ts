@@ -41,6 +41,14 @@ test("permission settings allow the mind and content, deny harness paths", () =>
   assert.ok(!s.permissions.allow.some((r) => r.includes("runtime")));
 });
 
+test("correspondence wakings can't write public content or read episodes", () => {
+  const { paths } = makeHome();
+  const s = buildSettings(paths, "correspondence") as { permissions: { allow: string[]; deny: string[] } };
+  assert.ok(!s.permissions.allow.some((r) => r.includes("content/")));
+  assert.ok(!s.permissions.allow.includes("WebFetch"));
+  assert.ok(s.permissions.deny.includes(`Read(/${paths.mind}/episodes/**)`));
+});
+
 test("correspondence wakings have no web or subagents", () => {
   assert.deepEqual(builtinTools("correspondence").filter((t) => /Web|Agent/.test(t)), []);
   assert.ok(builtinTools("ordinary").includes("WebFetch"));

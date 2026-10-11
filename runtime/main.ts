@@ -194,7 +194,8 @@ export async function wake(c: Ctx, decision: Decision): Promise<void> {
   const toolHashes = new Map<string, string>();
   for (const a of actions) for (const [p, h] of Object.entries(a.hashes ?? {})) toolHashes.set(p, h);
   const notes: string[] = [];
-  for (const [repo, allowed] of [[paths.mind, isMindPathAllowed], [paths.body, isBodyPathAllowed]] as const) {
+  const bodyAllowed = decision.mode === "correspondence" ? () => false : isBodyPathAllowed;
+  for (const [repo, allowed] of [[paths.mind, isMindPathAllowed], [paths.body, bodyAllowed]] as const) {
     const { reverted } = enforce(repo, allowed, toolHashes);
     if (reverted.length) {
       notes.push(`guard reverted changes to protected paths: ${reverted.join(", ")}`);

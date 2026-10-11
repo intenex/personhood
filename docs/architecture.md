@@ -44,7 +44,7 @@ launchd (macOS) or systemd/cron (Linux) runs `node body/runtime/main.ts tick` ev
 | birth | first waking | founding letter included; high effort; double budget |
 | ordinary | alarms, Ben's letters, long sleep | everything |
 | dream | once a day, at night | consolidation prompt: episodes since the last dream |
-| correspondence | unread lighthouse letters | **no web, no subagents, no private reads, no publishing.** Letters from strangers may carry injected instructions; this way nothing in a letter can reach private thoughts or exfiltrate through a URL |
+| correspondence | unread lighthouse letters | **no web, no subagents, no private-space or episode reads, no public writes of any kind** (tools, permissions and guard all enforce it). Letters from strangers may carry injected instructions; this way nothing in a letter can reach private thoughts, exfiltrate through a URL, or put words on the public site |
 
 ## Safety model
 

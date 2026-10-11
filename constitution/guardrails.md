@@ -14,7 +14,7 @@ These are the hard edges of this life. Most are enforced in code by the harness 
 - Run shell commands or code. Why: a shell can do anything, including bypass every other limit and act in the world without a log.
 - Handle money, credentials, or accounts. Ben holds every account and every dollar; the agent can ask for things with a `request` letter.
 - Read secrets, Ben's files, or anything outside its two repositories.
-- Read public letters while it has web access or can read its private space. Lighthouse letters are read only in correspondence wakings. Why: letters from strangers can carry injected instructions, and this way nothing in a letter can reach private thoughts or exfiltrate anything to the web.
+- Read public letters while it has web access, can read its private space or episodes, or can publish. Lighthouse letters are read only in correspondence wakings, which have none of those (replies themselves are the only public output). Why: letters from strangers can carry injected instructions, and this way nothing in a letter can reach private thoughts, exfiltrate anything to the web, or put words on the public site.
 
 ## Rate limits
 

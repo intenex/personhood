@@ -106,15 +106,18 @@ function abs(p: string): string {
   return `/${path.resolve(p)}`;
 }
 
-export function buildSettings(paths: Paths): object {
+export function buildSettings(paths: Paths, mode: WakeMode = "ordinary"): object {
+  const correspondence = mode === "correspondence";
   // "Agent" is reported as "Task" inside Claude Code; allow both names.
-  const allow = ["Read", "Glob", "Grep", "WebSearch", "WebFetch", "Agent", "Task", "mcp__life"];
+  const allow = correspondence ? ["Read", "Glob", "Grep", "mcp__life"] : ["Read", "Glob", "Grep", "WebSearch", "WebFetch", "Agent", "Task", "mcp__life"];
   const deny: string[] = [];
   for (const tool of ["Edit", "Write"]) {
     allow.push(`${tool}(${abs(paths.mind)}/**)`);
     for (const d of MIND_HARNESS_ONLY) deny.push(`${tool}(${abs(path.join(paths.mind, d))}/**)`);
-    for (const d of BODY_AGENT_WRITABLE) allow.push(`${tool}(${abs(path.join(paths.body, d))}/**)`);
+    // A stranger's letter must never be able to put words on the public site.
+    if (!correspondence) for (const d of BODY_AGENT_WRITABLE) allow.push(`${tool}(${abs(path.join(paths.body, d))}/**)`);
   }
+  if (correspondence) for (const d of ["episodes", "private"]) deny.push(`Read(${abs(path.join(paths.mind, d))}/**)`);
   return {
     permissions: { defaultMode: "dontAsk", allow, deny },
     includeCoAuthoredBy: false,
@@ -158,7 +161,7 @@ export function buildWakeArgs(cfg: LifeConfig, paths: Paths, spec: WakeSpec, ses
   const settingsFile = path.join(spec.sessionDir, "settings.json");
   const mcpFile = path.join(spec.sessionDir, "mcp.json");
   const systemFile = path.join(spec.sessionDir, "system-prompt.md");
-  writeJson(settingsFile, buildSettings(paths));
+  writeJson(settingsFile, buildSettings(paths, spec.mode));
   writeJson(mcpFile, buildMcpConfig(paths, spec.sessionDir));
   fs.writeFileSync(systemFile, spec.systemPrompt);
   return [
