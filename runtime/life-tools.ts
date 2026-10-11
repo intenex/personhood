@@ -307,6 +307,9 @@ export async function messageBen(ctx: ToolContext, a: { text: string; wait_minut
   if (line.sentToday("agent", ctx.now()) >= max) throw new Error(`you've sent Ben ${max} messages today, the daily limit; write_to_ben still works for anything that can't wait`);
   await line.send(text(a.text, "text", 12000), "agent", { waking: ctx.session.waking });
   logAction(ctx, { tool: "message_ben", summary: "messaged Ben on the direct line", public: false, writes: [], external: true });
+  // A correspondence waking reads strangers' letters and writes public replies: it can tell Ben
+  // something, but his private messages never come back into it.
+  if (ctx.session.mode === "correspondence") return "Sent. His reply will reach you in an ordinary waking.";
   return a.wait_minutes ? `Sent. ${await waitForBen(line, a.wait_minutes)}` : "Sent.";
 }
 

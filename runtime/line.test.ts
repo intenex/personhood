@@ -164,6 +164,18 @@ test("message_ben sends, waits for a reply, and respects the daily limit", async
   await assert.rejects(messageBen(ctx, { text: "one more" }), /daily limit/);
 });
 
+test("a correspondence waking can text Ben but never reads his messages", async () => {
+  const { line, tg, paths } = pairedLine();
+  tg.incoming("something private");
+  await line.poll(0);
+  line.touchAlive();
+  const ctx = toolContext(paths, line);
+  ctx.session.mode = "correspondence";
+  const res = await messageBen(ctx, { text: "A letter worried me; can we talk later?", wait_minutes: 5 });
+  assert.equal(res, "Sent. His reply will reach you in an ordinary waking.");
+  assert.equal(line.unreadFromBen().length, 1, "still unread, for an ordinary waking");
+});
+
 test("without a listener, waiting returns at once and says why", async () => {
   const { line, paths } = pairedLine();
   const started = Date.now();
