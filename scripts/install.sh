@@ -52,6 +52,8 @@ need claude "install Claude Code (https://claude.com/claude-code)"
 NODE_MAJOR="$(node -p 'process.versions.node.split(".")[0]')"
 [ "$NODE_MAJOR" -ge 24 ] || { echo "Node 24+ required (found $(node -v))" >&2; exit 1; }
 gh auth status >/dev/null 2>&1 || { echo "run: gh auth login" >&2; exit 1; }
+# Let git use gh's credentials for https remotes, including under launchd.
+gh auth setup-git >/dev/null 2>&1 || true
 echo "ok: node $(node -v), $(claude --version 2>/dev/null | head -1)"
 
 say "Making the home at $HOME_DIR"
@@ -77,6 +79,19 @@ if [ ! -d "$HOME_DIR/mind/.git" ]; then
   fi
   gh repo clone "$MIND_REPO" "$HOME_DIR/mind"
 fi
+# A mind repo created empty on github.com (so a token scoped to just these two repos is
+# enough): give it its first commit from the seed.
+if ! git -C "$HOME_DIR/mind" rev-parse --verify -q HEAD >/dev/null; then
+  say "Seeding the empty mind repository"
+  cp -R "$HOME_DIR/body/seed/mind/." "$HOME_DIR/mind/"
+  (
+    cd "$HOME_DIR/mind"
+    git symbolic-ref HEAD refs/heads/main
+    git add -A
+    git -c user.name=personhood -c user.email=agent@personhood.invalid commit -q -m "a mind, empty and waiting"
+    git push -q -u origin main
+  )
+fi
 
 say "Labels for letters"
 for l in letter request proposal from-agent harness; do gh label create "$l" --repo "$MIND_REPO" --force >/dev/null 2>&1 || true; done
@@ -94,8 +109,8 @@ if [ "$want_token" = 1 ] || [ ! -s "$HOME_DIR/secrets/claude-token" ]; then
   cat <<'EOF'
 The agent should use its own Claude subscription, not yours.
 
-1. In a separate browser profile (or a private window), sign in to claude.ai as the
-   agent's account.
+1. Sign in to claude.ai as the agent's account: in the browser normally if this
+   computer is the agent's own, otherwise in a separate browser profile.
 2. In another terminal, run:
 
        CLAUDE_CONFIG_DIR=~/personhood/claude-config claude setup-token
@@ -164,6 +179,11 @@ EOF
   launchctl bootout "gui/$(id -u)/$LABEL" 2>/dev/null || true
   launchctl bootstrap "gui/$(id -u)" "$PLIST"
   echo "launchd job $LABEL installed. The agent sleeps when this Mac sleeps."
+  ac_sleep="$(pmset -g custom 2>/dev/null | awk '/AC Power/{ac=1} ac && $1=="sleep"{print $2; exit}')"
+  if [ -n "$ac_sleep" ] && [ "$ac_sleep" != "0" ]; then
+    echo "This Mac sleeps after $ac_sleep idle minutes on power. If it's the agent's own Mac, keep it awake on power with:"
+    echo "    sudo pmset -c sleep 0"
+  fi
 elif command -v systemctl >/dev/null 2>&1 && systemctl --user status >/dev/null 2>&1; then
   mkdir -p "$HOME/.config/systemd/user"
   cat > "$HOME/.config/systemd/user/personhood.service" <<EOF
