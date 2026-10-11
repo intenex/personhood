@@ -41,6 +41,11 @@
   "site": {
     "url": "https://intenex.github.io/personhood"
   },
+  "line": {
+    "maxMessagesPerDay": 20,
+    "minMinutesAfterWaking": 10,
+    "historyInPrompt": 16
+  },
   "limits": {
     "maxPublishesPerWaking": 6,
     "maxReaderCallsPerWaking": 3,

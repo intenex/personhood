@@ -28,8 +28,14 @@ export function appendWakingLog(paths: Paths, e: WakingLogEntry): void {
   appendJsonl(path.join(paths.body, "content", "data", "wakings.jsonl"), e);
 }
 
-export function exportPublicData(cfg: LifeConfig, paths: Paths, state: MindState, ledger: Ledger, awake = false): void {
-  const data = (f: string) => path.join(paths.body, "content", "data", f);
+/** Write the public data files; returns their paths (the guard trusts them as the harness's writes). */
+export function exportPublicData(cfg: LifeConfig, paths: Paths, state: MindState, ledger: Ledger, awake = false): string[] {
+  const written: string[] = [];
+  const data = (f: string) => {
+    const file = path.join(paths.body, "content", "data", f);
+    written.push(file);
+    return file;
+  };
   const m = state.meta();
   // Proof of life for the watchdog (.github/workflows/watch.yml), refreshed at least daily.
   writeJson(data("heartbeat.json"), { checked: new Date().toISOString() });
@@ -64,6 +70,7 @@ export function exportPublicData(cfg: LifeConfig, paths: Paths, state: MindState
       agreement_with_baseline: p.agreement_with_baseline,
     })),
   );
+  return written;
 }
 
 export function readStatus(paths: Paths): Record<string, unknown> {

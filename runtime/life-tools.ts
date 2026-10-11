@@ -6,9 +6,10 @@ import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import YAML from "yaml";
-import { EFFORTS, type Effort, type Instruments, type LifeConfig, type Paths } from "./config.ts";
+import { EFFORTS, type Effort, type Instruments, type LifeConfig, lineSettings, type Paths } from "./config.ts";
 import type { GitHubLike } from "./github.ts";
 import { describeResources, Ledger } from "./ledger.ts";
+import type { Line } from "./line.ts";
 import { markRead, parseLetterId, renderThread, repoFor, signReply, unreadLetters } from "./letters.ts";
 import { type CheckIn, MindState, isUnread, shortId } from "./state.ts";
 import { appendJsonl, clip, ensureDir, localDateKey, readJson, readJsonl, safeJoin, slugify, writeJson, writeText } from "./util.ts";
@@ -39,6 +40,8 @@ export interface ToolContext {
   session: Session;
   now: () => Date;
   reader?: (text: string, prompt: string) => Promise<ReaderResult>;
+  /** The direct line to Ben, if it's set up. */
+  line?: Line | null;
 }
 
 export interface Action {
@@ -286,7 +289,47 @@ export async function writeToBen(ctx: ToolContext, a: { title: string; body: str
   sent[today] = (sent[today] ?? 0) + 1;
   writeJson(path.join(ctx.state.mind, "state", "outbox.json"), sent);
   logAction(ctx, { tool: "write_to_ben", summary: `wrote to Ben (${kind})`, public: false, writes: [path.join(ctx.state.mind, "state", "outbox.json")], external: true });
+  // GitHub doesn't notify Ben about issues posted through his own account, so ping the line.
+  await ctx.line?.send(`(A ${kind} for you on GitHub: "${a.title}"\n${issue.html_url})`, "harness").catch(() => undefined);
   return `Sent to Ben as ${kind}: ${issue.html_url} (it's letter ben-${issue.number}; his replies will show up as unread)`;
+}
+
+// ---------- the direct line ----------
+
+function requireLine(ctx: ToolContext): Line {
+  if (!ctx.line) throw new Error("there's no direct line to Ben yet (he hasn't set up Telegram); use write_to_ben");
+  return ctx.line;
+}
+
+export async function messageBen(ctx: ToolContext, a: { text: string; wait_minutes?: number }): Promise<string> {
+  const line = requireLine(ctx);
+  const max = lineSettings(ctx.cfg).maxMessagesPerDay;
+  if (line.sentToday("agent", ctx.now()) >= max) throw new Error(`you've sent Ben ${max} messages today, the daily limit; write_to_ben still works for anything that can't wait`);
+  await line.send(text(a.text, "text", 12000), "agent", { waking: ctx.session.waking });
+  logAction(ctx, { tool: "message_ben", summary: "messaged Ben on the direct line", public: false, writes: [], external: true });
+  return a.wait_minutes ? `Sent. ${await waitForBen(line, a.wait_minutes)}` : "Sent.";
+}
+
+export async function checkMessages(ctx: ToolContext, a: { wait_minutes?: number }): Promise<string> {
+  return waitForBen(requireLine(ctx), a.wait_minutes ?? 0);
+}
+
+/** Return Ben's unread messages (marking them seen), waiting up to `minutes` for one to arrive. */
+async function waitForBen(line: Line, minutes: number, pollMs = 2000): Promise<string> {
+  const wait = Math.min(Math.max(Number(minutes) || 0, 0), 15);
+  const listening = line.listenerAlive();
+  const deadline = Date.now() + (listening ? wait * 60_000 : 0);
+  for (;;) {
+    const unread = line.unreadFromBen();
+    if (unread.length) {
+      line.markPresented(unread[unread.length - 1].tgId);
+      return `New from Ben:\n${unread.map((m) => `<message from="Ben" at="${m.t}">\n${m.text}\n</message>`).join("\n")}`;
+    }
+    if (Date.now() >= deadline) break;
+    await new Promise((r) => setTimeout(r, pollMs));
+  }
+  if (!listening) return "No new messages from Ben. (The line's listener isn't running, so his messages only arrive between wakings.)";
+  return wait ? `No reply from Ben within ${wait} minute${wait === 1 ? "" : "s"}. He'll see your message; his reply will be here next time.` : "No new messages from Ben.";
 }
 
 // ---------- publishing ----------

@@ -44,7 +44,7 @@ export function makeHome(): { paths: Paths; key: string } {
   fs.writeFileSync(path.join(secrets, "vault.key"), key);
   return {
     key,
-    paths: { home, body, mind, secrets, claudeConfig: path.join(home, "claude-config"), run: path.join(home, "run"), logs: path.join(home, "logs") },
+    paths: { home, body, mind, secrets, claudeConfig: path.join(home, "claude-config"), run: path.join(home, "run"), logs: path.join(home, "logs"), line: path.join(home, "line") },
   };
 }
 
@@ -57,5 +57,6 @@ export function envFor(paths: Paths): NodeJS.ProcessEnv {
     PERSONHOOD_CLAUDE_CONFIG: paths.claudeConfig,
     PERSONHOOD_RUN: paths.run,
     PERSONHOOD_LOGS: paths.logs,
+    PERSONHOOD_LINE: paths.line,
   };
 }

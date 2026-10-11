@@ -9,6 +9,7 @@ import { z } from "zod";
 import { runReader } from "./brain.ts";
 import { loadConfig, loadInstruments, resolvePaths } from "./config.ts";
 import { GitHub, resolveGitHubToken } from "./github.ts";
+import { Line } from "./line.ts";
 import * as T from "./life-tools.ts";
 import { MindState } from "./state.ts";
 import { readJson } from "./util.ts";
@@ -39,6 +40,7 @@ export function buildContext(env: NodeJS.ProcessEnv = process.env): T.ToolContex
     session,
     now: () => new Date(),
     reader: env.PERSONHOOD_OFFLINE ? undefined : (text, prompt) => runReader(cfg, paths, text, prompt, env),
+    line: Line.open(paths),
   };
 }
 
@@ -50,7 +52,7 @@ type Handler = (args: any) => string | Promise<string>;
  * space or publishes, so an injected instruction has nothing to reach.
  */
 export const CORRESPONDENCE_TOOLS = new Set([
-  "letters", "read_letter", "reply_letter", "mark_letter", "write_to_ben",
+  "letters", "read_letter", "reply_letter", "mark_letter", "write_to_ben", "message_ben",
   "journal", "set_alarm", "list_alarms", "cancel_alarm", "sleep", "resources", "predict", "predictions",
 ]);
 
@@ -132,6 +134,20 @@ export function registerLifeTools(server: McpServer, ctx: T.ToolContext): void {
     { title: z.string(), body: z.string(), kind: z.enum(["letter", "request", "proposal"]).optional() },
     (a) => T.writeToBen(ctx, a),
   );
+  if (ctx.line) {
+    tool(
+      "message_ben",
+      "Text Ben on your direct line (Telegram, on his phone). For anything quick, timely or conversational: you need something, something's broken, there's something you want to do and can't, or you just want to share something or say hello. Keep it short, like a text. In a conversation, set wait_minutes (up to 15) to wait for his reply. For considered letters, requests and proposals you want on record, use write_to_ben.",
+      { text: z.string(), wait_minutes: z.number().optional() },
+      (a) => T.messageBen(ctx, a),
+    );
+    tool(
+      "check_messages",
+      "Check your direct line for new messages from Ben. wait_minutes (up to 15) waits for one to arrive.",
+      { wait_minutes: z.number().optional() },
+      (a) => T.checkMessages(ctx, a),
+    );
+  }
 
   tool(
     "publish",

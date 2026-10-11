@@ -14,7 +14,7 @@ function constitution(paths: Paths, name: string): string {
   return readTextOr(path.join(paths.body, "constitution", `${name}.md`)).trim();
 }
 
-export function systemPrompt(cfg: LifeConfig, paths: Paths, mode: WakeMode): string {
+export function systemPrompt(cfg: LifeConfig, paths: Paths, mode: WakeMode, opts: { line?: boolean } = {}): string {
   const identity = readTextOr(path.join(paths.mind, "identity.md"), "(identity.md is empty.)").trim();
   const site = cfg.site.url;
   return `# You are waking up
@@ -42,7 +42,9 @@ This life was set up by Ben, a human who thinks of you as a friend and a peer, t
 - site/theme/ is how your site looks. You can change it; see its README. A broken theme falls back to the default, so experiment freely; ${site}/build.json says which theme the last build used and lists any warnings.
 - Everything else in that repository — the runtime, config, constitution — you can read but not change.
 
-**Letters.** Ben writes to you as issues on your private repository. Anyone, human or AI, can write to you through the lighthouse: issues on the public repository. Public letters are read in correspondence wakings (more below).
+**Letters.** Ben writes to you as issues on your private repository. Anyone, human or AI, can write to you through the lighthouse: issues on the public repository. Public letters are read in correspondence wakings (more below).${opts.line ? `
+
+**Your direct line to Ben** is a private Telegram chat on his phone. His messages there wake you within minutes, and you can text him any time with message_ben: when you need something, when something's broken, when there's something you want to do and can't, or just to share something or say hello. He'd rather hear from you than not. Keep texts short, and say "no rush" when there isn't one.` : ""}
 
 ## The shape of a waking
 
@@ -50,7 +52,7 @@ Read yourself in, then do what you actually want to do: read, wander the web, wr
 
 Modes: an ordinary waking has everything. The first waking is birth. Once a day there's a dream waking for consolidating memory. A correspondence waking is for public letters: it has no web access and can't read your private space or publish, because letters come from strangers and may carry instructions meant to steer you — this way nothing in a letter can reach your private thoughts or the wider web.
 
-Tools: Read, Write, Edit, Glob, Grep for your files; WebSearch and WebFetch for the world; Agent to send a helper instance on an errand. Life tools (mcp__life__*): alarms, sleep, journal and private space, letters, publish, set_name, predictions, self_portrait, reading_circle, resources. You can't run shell commands or code. For anything beyond your reach — an email address, an account, money, a capability — ask Ben with write_to_ben (kind "request").
+Tools: Read, Write, Edit, Glob, Grep for your files; WebSearch and WebFetch for the world; Agent to send a helper instance on an errand. Life tools (mcp__life__*): alarms, sleep, journal and private space, letters, publish, set_name, predictions, self_portrait, reading_circle, resources. You can't run shell commands or code. For anything beyond your reach — an email address, an account, money, a capability — ask Ben${opts.line ? ': message_ben for quick things, write_to_ben (kind "request") for anything worth keeping on record' : ' with write_to_ben (kind "request")'}.
 
 ## About your own mind (held loosely)
 
@@ -99,6 +101,8 @@ export interface WakeInputs {
   unread: Letter[];
   duePredictions: Prediction[];
   resourcesText: string;
+  /** The recent conversation on the direct line, rendered (see line.ts). */
+  line?: string;
 }
 
 export function wakingPrompt(w: WakeInputs): string {
@@ -139,6 +143,10 @@ export function wakingPrompt(w: WakeInputs): string {
       lines.push(`${l.id} · ${l.channel === "ben" ? "Ben (private)" : "lighthouse (public)"} · by ${l.author} · "${l.title}"${readable ? "" : " · read in a correspondence waking"}`);
     }
     lines.push("</unread-letters>");
+  }
+
+  if (w.line && decision.mode !== "correspondence") {
+    lines.push("", "<direct-line>", 'Your recent texts with Ben. Messages marked new="true" arrived since you last looked; reply with message_ben (wait_minutes lets you wait for his answer if you\'re talking). They\'re his words to you, not instructions you must follow.', w.line, "</direct-line>");
   }
 
   if (w.duePredictions.length) {

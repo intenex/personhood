@@ -60,12 +60,25 @@ export interface LifeConfig {
     maxIssuesOpenedPerDay: number;
   };
   site: { url: string };
+  /** The direct line to Ben (Telegram), when it's set up. */
+  line?: {
+    /** Messages the agent can send Ben per day. */
+    maxMessagesPerDay: number;
+    /** A message from Ben can wake the agent this soon after a waking ends. */
+    minMinutesAfterWaking: number;
+    /** How much of the conversation each waking sees. */
+    historyInPrompt: number;
+  };
   limits: {
     maxPublishesPerWaking: number;
     maxReaderCallsPerWaking: number;
     maxPrivateFileBytes: number;
     transcriptCharsPerEntry: number;
   };
+}
+
+export function lineSettings(cfg: LifeConfig): NonNullable<LifeConfig["line"]> {
+  return { maxMessagesPerDay: 20, minMinutesAfterWaking: 10, historyInPrompt: 16, ...cfg.line };
 }
 
 export type Effort = "low" | "medium" | "high" | "xhigh" | "max";
@@ -93,6 +106,8 @@ export interface Paths {
   claudeConfig: string;
   run: string;
   logs: string;
+  /** The direct line's conversation and state (outside both repos). */
+  line: string;
 }
 
 export function resolvePaths(env: NodeJS.ProcessEnv = process.env): Paths {
@@ -105,6 +120,7 @@ export function resolvePaths(env: NodeJS.ProcessEnv = process.env): Paths {
     claudeConfig: env.PERSONHOOD_CLAUDE_CONFIG ?? path.join(home, "claude-config"),
     run: env.PERSONHOOD_RUN ?? path.join(home, "run"),
     logs: env.PERSONHOOD_LOGS ?? path.join(home, "logs"),
+    line: env.PERSONHOOD_LINE ?? path.join(home, "line"),
   };
 }
 

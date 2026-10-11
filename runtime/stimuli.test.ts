@@ -74,3 +74,15 @@ test("portrait and probe flags", () => {
   assert.equal(d.portraitDue, true);
   assert.equal(decide(cfg, s({})).probeDue, false);
 });
+
+test("a message on the direct line wakes soon, past the daily count and while resting", () => {
+  const justWoke = { ...born, lastWakeEnd: "2026-10-10T11:45:00Z", wakingsByDay: { "2026-10-10": 99 } };
+  const d = decide(cfg, s({ meta: justWoke, lineFromBen: 2, spentToday: 999 }));
+  assert.equal(d.wake, true);
+  assert.equal(d.why, "message from Ben");
+  assert.match(d.reasons[0], /2 new messages/);
+  // Too soon after a waking: it waits a few minutes.
+  assert.equal(decide(cfg, s({ meta: { ...justWoke, lastWakeEnd: "2026-10-10T11:55:00Z" }, lineFromBen: 1 })).wake, false);
+  // Paused means paused.
+  assert.equal(decide(cfg, s({ meta: { ...born, paused: true }, lineFromBen: 1 })).wake, false);
+});

@@ -2,7 +2,7 @@
 // heartbeat costs nothing when there's no reason to wake.
 
 import type { WakeMode } from "./brain.ts";
-import { EFFORTS, type Effort, type LifeConfig } from "./config.ts";
+import { EFFORTS, type Effort, type LifeConfig, lineSettings } from "./config.ts";
 import type { Alarm, Letter, Meta } from "./state.ts";
 import { hoursBetween, localDateKey, localHour } from "./util.ts";
 
@@ -13,6 +13,8 @@ export interface Stimuli {
   unread: Letter[];
   spentToday: number;
   spentMonth: number;
+  /** Unread messages from Ben on the direct line. */
+  lineFromBen?: number;
   /** Episodes recorded since the last dream (nothing new means no need to dream). */
   episodesSinceDream?: number;
   timeZone?: string;
@@ -50,6 +52,12 @@ export function decide(cfg: LifeConfig, s: Stimuli): Decision {
   if (!m.born) return { ...base, wake: true, mode: "birth", effort: "high", reasons: ["This is your first waking."], why: "birth" };
 
   const sinceWake = m.lastWakeEnd ? hoursBetween(new Date(m.lastWakeEnd), s.now) : Infinity;
+  // A message on the direct line is Ben talking to you now: it wakes you soon after a waking,
+  // past the daily count and while resting. Each one wakes you once (it's then marked seen).
+  const lineN = s.lineFromBen ?? 0;
+  if (lineN > 0 && sinceWake * 60 >= lineSettings(cfg).minMinutesAfterWaking) {
+    return { ...base, wake: true, reasons: [`${lineN} new message${lineN > 1 ? "s" : ""} from Ben on your direct line.`], why: "message from Ben" };
+  }
   if (sinceWake * 60 < r.minMinutesBetweenWakings) return no("woke recently");
 
   const today = localDateKey(s.now, s.timeZone);

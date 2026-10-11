@@ -74,6 +74,8 @@ export function brainEnv(cfg: LifeConfig, paths: Paths, base: NodeJS.ProcessEnv 
   env.PERSONHOOD_SECRETS = paths.secrets;
 
   env.DISABLE_AUTOUPDATER = "1";
+  // Waiting on the direct line for Ben's reply can take minutes (check_messages wait_minutes).
+  env.MCP_TOOL_TIMEOUT = String(20 * 60_000);
   const apiKey = readSecret(path.join(paths.secrets, "anthropic-api-key"));
   if (apiKey && cfg.brain.auth === "api-key") {
     env.ANTHROPIC_API_KEY = apiKey;
@@ -137,7 +139,7 @@ export function buildSettings(paths: Paths, mode: WakeMode = "ordinary"): object
   // along with the usual places this account's credentials live, in case a future Claude Code
   // loosens --restricted (the harness updates it weekly).
   const home = os.homedir();
-  for (const dir of [paths.secrets, paths.claudeConfig, paths.run, paths.logs, ...HOME_CREDENTIAL_DIRS.map((d) => path.join(home, d))]) {
+  for (const dir of [paths.secrets, paths.claudeConfig, paths.run, paths.logs, paths.line, ...HOME_CREDENTIAL_DIRS.map((d) => path.join(home, d))]) {
     for (const tool of ["Read", "Edit", "Write"]) deny.push(`${tool}(${abs(dir)}/**)`);
   }
   for (const file of HOME_CREDENTIAL_FILES) {
@@ -164,7 +166,9 @@ export function buildMcpConfig(paths: Paths, sessionDir: string, extraEnv: Recor
           PERSONHOOD_SECRETS: paths.secrets,
           PERSONHOOD_RUN: paths.run,
           PERSONHOOD_CLAUDE_CONFIG: paths.claudeConfig,
+          PERSONHOOD_LINE: paths.line,
           PERSONHOOD_SESSION_DIR: sessionDir,
+          ...(process.env.PERSONHOOD_TELEGRAM_API ? { PERSONHOOD_TELEGRAM_API: process.env.PERSONHOOD_TELEGRAM_API } : {}),
           ...extraEnv,
         },
       },
