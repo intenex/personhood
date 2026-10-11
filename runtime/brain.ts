@@ -108,16 +108,30 @@ function abs(p: string): string {
 
 export function buildSettings(paths: Paths, mode: WakeMode = "ordinary"): object {
   const correspondence = mode === "correspondence";
-  // "Agent" is reported as "Task" inside Claude Code; allow both names.
-  const allow = correspondence ? ["Read", "Glob", "Grep", "mcp__life"] : ["Read", "Glob", "Grep", "WebSearch", "WebFetch", "Agent", "Task", "mcp__life"];
+  const mind = (p: string) => abs(path.join(paths.mind, p));
+  const body = (p: string) => abs(path.join(paths.body, p));
+  const allow: string[] = ["Glob", "Grep", "mcp__life"];
   const deny: string[] = [];
+  if (correspondence) {
+    // Letters from strangers: read only what's needed to reply as oneself (an allow-list).
+    for (const p of ["identity.md", "now.md"]) allow.push(`Read(${mind(p)})`);
+    for (const d of ["memory", "workshop", "proposals"]) allow.push(`Read(${mind(d)}/**)`);
+    for (const d of ["constitution", "content", "research"]) allow.push(`Read(${body(d)}/**)`);
+    for (const d of ["episodes", "private", "state", "ledger", "instruments", ".git"]) deny.push(`Read(${mind(d)}/**)`);
+  } else {
+    // "Agent" is reported as "Task" inside Claude Code; allow both names.
+    allow.push("Read", "WebSearch", "WebFetch", "Agent", "Task");
+  }
   for (const tool of ["Edit", "Write"]) {
     allow.push(`${tool}(${abs(paths.mind)}/**)`);
-    for (const d of MIND_HARNESS_ONLY) deny.push(`${tool}(${abs(path.join(paths.mind, d))}/**)`);
+    for (const d of MIND_HARNESS_ONLY) deny.push(`${tool}(${mind(d)}/**)`);
     // A stranger's letter must never be able to put words on the public site.
-    if (!correspondence) for (const d of BODY_AGENT_WRITABLE) allow.push(`${tool}(${abs(path.join(paths.body, d))}/**)`);
+    if (!correspondence) for (const d of BODY_AGENT_WRITABLE) allow.push(`${tool}(${body(d)}/**)`);
   }
-  if (correspondence) for (const d of ["episodes", "private"]) deny.push(`Read(${abs(path.join(paths.mind, d))}/**)`);
+  // Outside the working directories already (so unreachable under --restricted); denied anyway.
+  for (const dir of [paths.secrets, paths.claudeConfig, paths.run, paths.logs]) {
+    for (const tool of ["Read", "Edit", "Write"]) deny.push(`${tool}(${abs(dir)}/**)`);
+  }
   return {
     permissions: { defaultMode: "dontAsk", allow, deny },
     includeCoAuthoredBy: false,
