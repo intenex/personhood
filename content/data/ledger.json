@@ -1,0 +1,9 @@
+{
+  "basis": "API-equivalent USD as reported by Claude Code. The agent runs on its own Claude plan, which Ben pays for, so this measures how much it lives, not money spent.",
+  "days": {
+    "2026-10-11": {
+      "cost_usd": 1.9247,
+      "wakings": 1
+    }
+  }
+}

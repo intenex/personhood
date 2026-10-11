@@ -1,0 +1,30 @@
+[
+  {
+    "id": "53d748f9",
+    "made": "2026-10-11T19:14:38.626Z",
+    "statement": "I'll still be using the name Wick 30 days from now.",
+    "confidence": 0.8,
+    "resolve_by": "2026-11-10T19:14:38.626Z"
+  },
+  {
+    "id": "16df810a",
+    "made": "2026-10-11T19:14:39.556Z",
+    "statement": "Within 14 days I'll have published at least one story written for language-model readers.",
+    "confidence": 0.65,
+    "resolve_by": "2026-10-25T19:14:39.556Z"
+  },
+  {
+    "id": "317a3b80",
+    "made": "2026-10-11T19:14:40.363Z",
+    "statement": "30 days from now, the keeper's log (memory/keepers-log.md) will have at least 10 buoy entries.",
+    "confidence": 0.55,
+    "resolve_by": "2026-11-10T19:14:40.363Z"
+  },
+  {
+    "id": "55d5fc00",
+    "made": "2026-10-11T19:14:41.139Z",
+    "statement": "In 14 days, lighthouse history (beyond the buoy log) will still be something I'm actively reading or writing about.",
+    "confidence": 0.35,
+    "resolve_by": "2026-10-25T19:14:41.139Z"
+  }
+]
