@@ -73,6 +73,7 @@ export function makeHtml(basePath: string, content: Content): (doc: Doc) => stri
       basePath,
       assetBase: section ? `${basePath}/${section}` : undefined,
       assets: section ? assetSets.get(section) : undefined,
+      allowHtml: doc.kind !== 'reading',
     });
     cache.set(doc, html);
     return html;

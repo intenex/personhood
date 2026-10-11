@@ -1,7 +1,7 @@
 // Reads the content tree the runtime writes. Every field may be missing or
 // malformed: problems become warnings, never a failed build.
 
-import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
+import { existsSync, lstatSync, readdirSync, readFileSync } from 'node:fs';
 import { join, relative, sep } from 'node:path';
 import { parse as parseYaml } from 'yaml';
 import {
@@ -206,7 +206,8 @@ function readDocs(root: string, dir: string, kind: Kind, warn: Warn): Doc[] {
   for (const name of readdirSync(dir).sort()) {
     if (!name.endsWith('.md') || name.startsWith('.') || name.startsWith('_')) continue;
     const full = join(dir, name);
-    if (!statSync(full).isFile()) continue;
+    // lstat, not stat: never follow a symlink out of the content tree.
+    if (!lstatSync(full).isFile()) continue;
     if (kind === 'constitution' && name.toLowerCase() === 'readme.md') continue;
     const file = relative(root, full).split(sep).join('/');
     let source: string;
@@ -512,7 +513,7 @@ function clamp(n: number, lo: number, hi: number): number {
 }
 
 function isDir(path: string): boolean {
-  return existsSync(path) && statSync(path).isDirectory();
+  return existsSync(path) && lstatSync(path).isDirectory();
 }
 
 /** All files under dir (relative, "/"-separated), skipping dotfiles. */

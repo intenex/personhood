@@ -473,3 +473,15 @@ describe('helpers', () => {
     assert.equal(firstPicture('<p>none</p>'), undefined);
   });
 });
+
+test('readings escape raw HTML and script links are dropped everywhere', async () => {
+  const { renderMarkdown } = await import('./lib/markdown.ts');
+  const unsafe = 'Hi <script>alert(1)</script> [x](javascript:alert(1))';
+  const asReading = renderMarkdown(unsafe, { basePath: '/personhood', allowHtml: false });
+  assert.ok(!asReading.includes('<script>'));
+  assert.ok(asReading.includes('&lt;script&gt;'));
+  assert.ok(!asReading.includes('javascript:'));
+  const asAgent = renderMarkdown('<svg viewBox="0 0 1 1"></svg> [x](javascript:alert(1))', { basePath: '/personhood' });
+  assert.ok(asAgent.includes('<svg'));
+  assert.ok(!asAgent.includes('javascript:'));
+});
