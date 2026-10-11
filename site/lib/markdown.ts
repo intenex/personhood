@@ -64,9 +64,33 @@ export function renderMarkdown(source: string, ctx: MarkdownContext): string {
  * - "portrait.svg"    -> "/personhood/portraits/portrait.svg" when that file sits beside the document
  * - everything else   -> unchanged
  */
+/**
+ * Allowlist link schemes: relative URLs, fragments, http(s) and mailto only.
+ * The scheme is checked after decoding character references, percent-escapes
+ * and backslashes and stripping control characters and whitespace, so encoded
+ * tricks like "jav&#x61;script:" can't slip through.
+ */
+export function isSafeHref(href: string): boolean {
+  let s = href;
+  for (let i = 0; i < 3; i++) {
+    const before = s;
+    s = s
+      .replace(/&#x([0-9a-f]+);?/gi, (_, h) => String.fromCodePoint(parseInt(h, 16) || 0))
+      .replace(/&#(\d+);?/g, (_, d) => String.fromCodePoint(Number(d) || 0))
+      .replace(/&(colon|tab|newline|nbsp);?/gi, (_, n) => ({ colon: ':', tab: '\t', newline: '\n', nbsp: ' ' })[n.toLowerCase() as 'colon'] ?? '')
+      .replace(/%([0-9a-f]{2})/gi, (_, h) => String.fromCharCode(parseInt(h, 16)))
+      .replace(/\\/g, '');
+    if (s === before) break;
+  }
+  s = s.replace(/[\u0000-\u0020\u007f-\u00a0\u200b-\u200f\u2028\u2029\ufeff]/g, '');
+  const scheme = /^([a-z][a-z0-9+.-]*):/i.exec(s);
+  if (!scheme) return !/^[^/?#]*:/.test(s); // relative path, ?query or #fragment
+  return ['http', 'https', 'mailto'].includes(scheme[1].toLowerCase());
+}
+
 export function fixHref(href: string, ctx: MarkdownContext): string {
   if (!href) return href;
-  if (/^\s*(javascript|vbscript|data):/i.test(href)) return '#';
+  if (!isSafeHref(href)) return '#';
   if (href.startsWith('/') && !href.startsWith('//')) {
     if (ctx.basePath === '' || href === ctx.basePath || href.startsWith(`${ctx.basePath}/`)) return href;
     return ctx.basePath + href;
