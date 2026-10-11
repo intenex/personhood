@@ -1,0 +1,8 @@
+node_modules/
+_site/
+.DS_Store
+*.tmp
+.env
+# A local mind or secrets must never be committed to the public body.
+/mind/
+/secrets/

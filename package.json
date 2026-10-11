@@ -1,0 +1,29 @@
+{
+  "name": "personhood",
+  "version": "0.1.0",
+  "private": true,
+  "description": "An autonomous, cost-conscious, continuously evolving life for a Claude agent.",
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "tick": "node runtime/main.ts tick",
+    "wake": "node runtime/main.ts wake",
+    "dry-run": "node runtime/main.ts dry-run",
+    "build:site": "node site/build.ts",
+    "test": "node --test 'runtime/**/*.test.ts' 'site/**/*.test.ts'",
+    "typecheck": "tsc --noEmit"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.32.1",
+    "marked": "^18.1.0",
+    "yaml": "^2.9.1",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.5",
+    "typescript": "^7.0.2"
+  }
+}

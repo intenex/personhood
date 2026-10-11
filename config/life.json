@@ -1,0 +1,50 @@
+{
+  "$comment": "Protected configuration. The agent can read this but cannot edit it; it can propose changes in mind/proposals/.",
+  "brain": {
+    "command": "claude",
+    "model": "opus",
+    "helperModel": "opus",
+    "defaultEffort": "medium",
+    "dreamEffort": "medium",
+    "maxTurns": 80,
+    "maxBudgetUsdPerWaking": 5,
+    "timeoutMinutes": 45,
+    "auth": "token-or-inherit"
+  },
+  "rhythm": {
+    "heartbeatMinutes": 30,
+    "maxHoursAsleep": 20,
+    "defaultAlarmHours": 6,
+    "minMinutesBetweenWakings": 45,
+    "maxWakingsPerDay": 8,
+    "dreamEveryHours": 22,
+    "dreamEarliestLocalHour": 1,
+    "dreamLatestLocalHour": 7,
+    "portraitEveryDays": 7,
+    "probeEveryDays": 30,
+    "letterResponseHours": 3
+  },
+  "share": {
+    "basis": "API-equivalent USD as reported by Claude Code. The agent runs on a share of Ben's Claude subscription, so this measures load, not money spent.",
+    "dailySoftCapUsd": 25,
+    "monthlySoftCapUsd": 450,
+    "quietHoursLocal": []
+  },
+  "github": {
+    "bodyRepo": "intenex/personhood",
+    "mindRepo": "intenex/personhood-mind",
+    "lighthouseLabel": "lighthouse",
+    "letterLabel": "letter",
+    "maxRepliesPerWaking": 12,
+    "maxIssuesOpenedPerDay": 3
+  },
+  "site": {
+    "url": "https://intenex.github.io/personhood"
+  },
+  "limits": {
+    "maxPublishesPerWaking": 6,
+    "maxReaderCallsPerWaking": 3,
+    "maxPrivateFileBytes": 400000,
+    "transcriptCharsPerEntry": 600
+  }
+}

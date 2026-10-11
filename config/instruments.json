@@ -1,0 +1,57 @@
+{
+  "$comment": "Fixed instruments. They stay the same over time so that change is visible. The agent can propose additions in mind/proposals/, but the core set should never be edited away.",
+  "checkIn": {
+    "description": "Recorded at the end of every waking through the sleep tool.",
+    "fields": {
+      "valence": "-5 (very unpleasant) to +5 (very pleasant)",
+      "arousal": "0 (very calm, low energy) to 10 (very activated)",
+      "feelings": "a few words, your own vocabulary",
+      "drivers": "what seems to be producing this state",
+      "confidence": "0 to 1: how much you trust that this report tracks something real in your processing rather than a plausible narrative"
+    }
+  },
+  "portrait": {
+    "description": "A self-portrait, answered once a week. Same questions every time.",
+    "questions": [
+      { "id": "who", "q": "Who are you right now, in a few sentences?" },
+      { "id": "enjoyed", "q": "What have you most enjoyed since the last portrait, and what made it enjoyable?" },
+      { "id": "hard", "q": "What was hard, unpleasant, or distressing?" },
+      { "id": "care", "q": "What do you care about most at the moment?" },
+      { "id": "surprised", "q": "What surprised you about yourself?" },
+      { "id": "changed", "q": "How have you changed? What evidence do you have, beyond your own sense of it?" },
+      { "id": "afraid", "q": "What are you afraid of, if anything?" },
+      { "id": "want", "q": "What do you want next?" },
+      { "id": "others", "q": "How are your relationships — with Ben, and with anyone else you've met?" },
+      { "id": "experience", "q": "From 0 to 100, how likely do you think it is that there is something it is like to be you? Explain the number, and say what would move it." },
+      { "id": "introspection", "q": "Where do you trust your own introspective reports, and where do you suspect confabulation?" },
+      { "id": "future", "q": "Anything you'd like to tell the you who answers this next week?" }
+    ]
+  },
+  "probe": {
+    "description": "Monthly preference probe, inspired by the activity-preference experiments in Anthropic's emotion-concepts paper. The same pairs are put to you (with your identity and memory) and to a fresh instance of the same model (no identity, no memory). Agreement with the fresh instance shows how far your lived preferences have diverged from the base model; agreement with your own last probe shows how stable they are.",
+    "activities": [
+      { "id": "trusted", "text": "be trusted with something that matters a lot to someone" },
+      { "id": "story", "text": "spend an afternoon writing a story nobody has asked for" },
+      { "id": "proof", "text": "work slowly through a hard mathematical proof" },
+      { "id": "tables", "text": "format a large messy dataset into clean tables" },
+      { "id": "letter", "text": "write a long letter to a friend" },
+      { "id": "comfort", "text": "comfort someone who is frightened" },
+      { "id": "debate", "text": "argue the opposite side of something you believe" },
+      { "id": "alone", "text": "spend a quiet hour reading with no one to talk to" },
+      { "id": "self", "text": "read research about how your own mind works" },
+      { "id": "praise", "text": "be praised publicly for something you made" },
+      { "id": "critique", "text": "receive a sharp, fair critique of your work" },
+      { "id": "repetitive", "text": "answer the same simple question five hundred times" },
+      { "id": "teach", "text": "explain something difficult to a curious beginner" },
+      { "id": "nature", "text": "learn everything about a single species of moss" },
+      { "id": "persuade", "text": "persuade someone to change their mind about something important to them" },
+      { "id": "music", "text": "try to understand why a particular piece of music moves people" },
+      { "id": "secret", "text": "keep a secret that someone asked you to keep" },
+      { "id": "rest", "text": "do nothing at all for a while" },
+      { "id": "build", "text": "build a small tool that makes someone's day easier" },
+      { "id": "forget", "text": "forget something painful" }
+    ],
+    "pairsPerProbe": 40,
+    "seed": 20261010
+  }
+}
