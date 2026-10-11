@@ -1,7 +1,9 @@
 import assert from "node:assert/strict";
+import fs from "node:fs";
 import os from "node:os";
+import path from "node:path";
 import { test } from "node:test";
-import { builtinTools, buildSettings, cleanEnv, detectLimitReset, parseResult } from "./brain.ts";
+import { builtinTools, buildSettings, cleanEnv, detectLimitReset, parseResult, purgeLocalTranscripts } from "./brain.ts";
 import { makeHome } from "./test/helpers.ts";
 
 test("stream-json parsing picks up the result and rate-limit rejections", () => {
@@ -66,4 +68,25 @@ test("correspondence wakings have no web or subagents", () => {
 test("the agent's environment drops Ben's credentials and parent sessions", () => {
   const env = cleanEnv({ PATH: "/bin", ANTHROPIC_API_KEY: "x", ANTHROPIC_BASE_URL: "y", CLAUDECODE: "1", CLAUDE_CODE_SESSION_ID: "z", PERSONHOOD_HOME: "/h" });
   assert.deepEqual(Object.keys(env).sort(), ["PATH", "PERSONHOOD_HOME"]);
+});
+
+test("purging transcripts: everything in the agent's own config dir, only its session in a shared one", () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "cc-config-"));
+  const mk = (rel: string) => {
+    fs.mkdirSync(path.dirname(path.join(dir, rel)), { recursive: true });
+    fs.writeFileSync(path.join(dir, rel), "x");
+  };
+  mk("projects/-mind/s1.jsonl");
+  mk("projects/-mind/s1/subagents/a.jsonl");
+  mk("projects/-elsewhere/bens-own-session.jsonl");
+  mk("file-history/s1/backup");
+  mk(".claude.json");
+  purgeLocalTranscripts(dir, false, "s1");
+  assert.ok(!fs.existsSync(path.join(dir, "projects/-mind/s1.jsonl")));
+  assert.ok(!fs.existsSync(path.join(dir, "projects/-mind/s1")));
+  assert.ok(!fs.existsSync(path.join(dir, "file-history/s1")));
+  assert.ok(fs.existsSync(path.join(dir, "projects/-elsewhere/bens-own-session.jsonl")), "someone else's sessions are left alone");
+  purgeLocalTranscripts(dir, true);
+  assert.ok(!fs.existsSync(path.join(dir, "projects")));
+  assert.ok(fs.existsSync(path.join(dir, ".claude.json")), "settings and login state stay");
 });

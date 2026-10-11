@@ -148,7 +148,9 @@ export function buildSettings(paths: Paths, mode: WakeMode = "ordinary"): object
   return {
     permissions: { defaultMode: "dontAsk", allow, deny },
     includeCoAuthoredBy: false,
-    cleanupPeriodDays: 3650,
+    // The harness vaults each transcript and deletes Claude Code's plaintext copy right after a
+    // waking (purgeLocalTranscripts); this is the backstop if it ever can't.
+    cleanupPeriodDays: 2,
   };
 }
 
@@ -360,6 +362,28 @@ export function newSessionId(): string {
 }
 
 /** Find the Claude Code transcript for a session (JSONL) in the config dir. */
+/**
+ * Claude Code keeps its own plaintext transcripts, which hold everything the agent wrote to or read
+ * from its private space. Once the harness has vaulted a waking's transcript, they go. In the
+ * agent's isolated config dir everything session-shaped is removed; when sharing someone's default
+ * config (auth "inherit"), only this session's files are.
+ */
+export function purgeLocalTranscripts(configDir: string, isolated: boolean, sessionId?: string | null): void {
+  if (isolated) {
+    for (const d of ["projects", "file-history", "todos", "debug", "shell-snapshots"]) fs.rmSync(path.join(configDir, d), { recursive: true, force: true });
+    fs.rmSync(path.join(configDir, "history.jsonl"), { force: true });
+    return;
+  }
+  if (!sessionId) return;
+  const root = path.join(configDir, "projects");
+  if (!fs.existsSync(root)) return;
+  for (const dir of fs.readdirSync(root)) {
+    fs.rmSync(path.join(root, dir, `${sessionId}.jsonl`), { force: true });
+    fs.rmSync(path.join(root, dir, sessionId), { recursive: true, force: true });
+  }
+  fs.rmSync(path.join(configDir, "file-history", sessionId), { recursive: true, force: true });
+}
+
 export function findTranscript(configDir: string, sessionId: string): string | null {
   const root = path.join(configDir, "projects");
   if (!fs.existsSync(root)) return null;

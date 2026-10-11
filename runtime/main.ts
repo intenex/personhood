@@ -16,7 +16,7 @@ import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import YAML from "yaml";
-import { authPreflight, brainEnv, buildWakeArgs, cleanEnv, findTranscript, newSessionId, runClaude, type WakeMode } from "./brain.ts";
+import { authPreflight, brainEnv, buildWakeArgs, cleanEnv, findTranscript, newSessionId, purgeLocalTranscripts, runClaude, type WakeMode } from "./brain.ts";
 import { fileURLToPath } from "node:url";
 import { lineSettings, loadConfig, loadInstruments, resolvePaths, type LifeConfig, type Paths, type Instruments } from "./config.ts";
 import { condenseTranscript, episodesSince, saveTranscript, writeEpisode } from "./episodes.ts";
@@ -352,7 +352,8 @@ export async function wake(c: Ctx, decision: Decision): Promise<void> {
 
   // Episodic memory: a condensed transcript in the private space.
   const key = loadVaultKey(paths.secrets);
-  const transcript = res.sessionId ? findTranscript(auth.env.CLAUDE_CONFIG_DIR ?? path.join(process.env.HOME ?? "", ".claude"), res.sessionId) : null;
+  const configDir = auth.env.CLAUDE_CONFIG_DIR ?? path.join(process.env.HOME ?? "", ".claude");
+  const transcript = res.sessionId ? findTranscript(configDir, res.sessionId) : null;
   if (key && transcript) {
     try {
       saveTranscript(new Vault(paths.mind, key), waking, start.toISOString(), condenseTranscript(readTextOr(transcript), cfg.limits.transcriptCharsPerEntry));
@@ -360,6 +361,8 @@ export async function wake(c: Ctx, decision: Decision): Promise<void> {
       log(`transcript: ${(err as Error).message}`);
     }
   }
+  // The only copy of what happened privately is now the encrypted one.
+  purgeLocalTranscripts(configDir, auth.env.CLAUDE_CONFIG_DIR === paths.claudeConfig, res.sessionId);
 
   stampProvenance(paths, actions.flatMap((a) => a.writes), res.primaryModel);
 
@@ -564,6 +567,7 @@ async function probe(c: Ctx): Promise<void> {
   } catch (err) {
     log(`probe failed: ${(err as Error).message.slice(0, 300)}`);
   }
+  if (brainEnv(c.cfg, c.paths).env.CLAUDE_CONFIG_DIR === c.paths.claudeConfig) purgeLocalTranscripts(c.paths.claudeConfig, true);
 }
 
 // ---------- smoke test ----------

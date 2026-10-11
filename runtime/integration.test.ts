@@ -65,6 +65,7 @@ test("a whole waking, end to end, with a fake brain", () => {
   const names = vault.list().map((f) => f.name);
   assert.ok(names.some((n) => n.startsWith("journal/")));
   assert.ok(names.some((n) => n.startsWith("transcripts/")));
+  assert.ok(!fs.existsSync(path.join(paths.claudeConfig, "projects")), "Claude Code's plaintext transcript is gone once vaulted");
   const journalFile = execFileSync("find", [path.join(paths.mind, "private", "journal"), "-name", "*.enc"], { encoding: "utf8" }).trim();
   assert.ok(!fs.readFileSync(journalFile, "utf8").includes("nervousness"));
 
