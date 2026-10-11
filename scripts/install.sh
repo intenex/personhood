@@ -3,7 +3,8 @@
 #
 #   scripts/install.sh            set up everything that's missing
 #   scripts/install.sh --token    (re)enter the agent's Claude token
-#   scripts/install.sh --unschedule   stop the heartbeat
+#   scripts/install.sh --telegram (re)pair a Telegram bot: a direct line between you and the agent
+#   scripts/install.sh --unschedule   stop the heartbeat (and the line's listener)
 #
 # Works on macOS (launchd) and Linux (systemd user timer, or cron). Safe to re-run.
 # It never prints secrets: the vault key is generated straight to a file, and the
@@ -15,13 +16,16 @@ BODY_REPO="${PERSONHOOD_BODY_REPO:-intenex/personhood}"
 MIND_REPO="${PERSONHOOD_MIND_REPO:-intenex/personhood-mind}"
 HOME_DIR="${PERSONHOOD_HOME:-$HOME/personhood}"
 LABEL="com.personhood.heartbeat"
+LINE_LABEL="com.personhood.line"
 OS="$(uname -s)"
 
 want_token=0
+want_telegram=0
 unschedule=0
 for arg in "$@"; do
   case "$arg" in
     --token) want_token=1 ;;
+    --telegram) want_telegram=1 ;;
     --unschedule) unschedule=1 ;;
     *) echo "unknown option: $arg" >&2; exit 2 ;;
   esac
@@ -32,11 +36,13 @@ need() { command -v "$1" >/dev/null 2>&1 || { echo "missing: $1 — $2" >&2; exi
 
 unschedule_heartbeat() {
   if [ "$OS" = "Darwin" ]; then
-    launchctl bootout "gui/$(id -u)/$LABEL" 2>/dev/null || true
-    rm -f "$HOME/Library/LaunchAgents/$LABEL.plist"
+    for l in "$LABEL" "$LINE_LABEL"; do
+      launchctl bootout "gui/$(id -u)/$l" 2>/dev/null || true
+      rm -f "$HOME/Library/LaunchAgents/$l.plist"
+    done
   else
-    systemctl --user disable --now personhood.timer 2>/dev/null || true
-    rm -f "$HOME/.config/systemd/user/personhood.service" "$HOME/.config/systemd/user/personhood.timer"
+    systemctl --user disable --now personhood.timer personhood-line.service 2>/dev/null || true
+    rm -f "$HOME/.config/systemd/user/personhood.service" "$HOME/.config/systemd/user/personhood.timer" "$HOME/.config/systemd/user/personhood-line.service"
     (crontab -l 2>/dev/null | grep -v 'personhood/body/runtime/main.ts tick') | crontab - 2>/dev/null || true
   fi
   echo "heartbeat stopped"
@@ -134,6 +140,26 @@ EOF
   fi
 fi
 
+if [ "$want_telegram" = 1 ]; then
+  say "The direct line (Telegram)"
+  cat <<'EOF'
+A private chat between you and the agent, on your phone. It can text you when it needs
+something, when something's broken, or just to say hello; your messages wake it within
+minutes; and /status, /pause, /resume and /wake work from anywhere.
+
+1. In Telegram, open a chat with @BotFather, send /newbot, and follow the prompts (any
+   name; the username has to end in "bot"). It replies with a token like 123456:ABC-xyz.
+2. Paste that token here (nothing will show as you type). Leave it empty to re-pair the
+   bot you already set up.
+EOF
+  printf 'bot token: '
+  IFS= read -rs tg_token || true
+  echo
+  printf '%s' "${tg_token:-}" | PERSONHOOD_HOME="$HOME_DIR" node "$HOME_DIR/body/runtime/main.ts" line pair \
+    || echo "(pairing didn't finish; run scripts/install.sh --telegram again)"
+  unset tg_token
+fi
+
 say "Checking the installation"
 PERSONHOOD_HOME="$HOME_DIR" node "$HOME_DIR/body/runtime/main.ts" doctor || echo "(fix the ✗ items above, then re-run this script)"
 echo
@@ -184,6 +210,40 @@ EOF
     echo "This Mac sleeps after $ac_sleep idle minutes on power. If it's the agent's own Mac, keep it awake on power with:"
     echo "    sudo pmset -c sleep 0"
   fi
+  if [ -s "$HOME_DIR/secrets/telegram.json" ]; then
+    LINE_PLIST="$HOME/Library/LaunchAgents/$LINE_LABEL.plist"
+    cat > "$LINE_PLIST" <<EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>$LINE_LABEL</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>$NODE_BIN</string>
+    <string>$HOME_DIR/body/runtime/main.ts</string>
+    <string>listen</string>
+  </array>
+  <key>WorkingDirectory</key><string>$HOME_DIR</string>
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>PATH</key><string>$PATH_FOR_JOB</string>
+    <key>PERSONHOOD_HOME</key><string>$HOME_DIR</string>
+  </dict>
+  <!-- Always running; it exits hourly to pick up new code, and launchd starts it again. -->
+  <key>RunAtLoad</key><true/>
+  <key>KeepAlive</key><true/>
+  <key>ThrottleInterval</key><integer>30</integer>
+  <key>StandardOutPath</key><string>$HOME_DIR/logs/line.out.log</string>
+  <key>StandardErrorPath</key><string>$HOME_DIR/logs/line.err.log</string>
+  <key>ProcessType</key><string>Background</string>
+</dict>
+</plist>
+EOF
+    launchctl bootout "gui/$(id -u)/$LINE_LABEL" 2>/dev/null || true
+    launchctl bootstrap "gui/$(id -u)" "$LINE_PLIST"
+    echo "launchd job $LINE_LABEL installed: the direct line is listening."
+  fi
 elif command -v systemctl >/dev/null 2>&1 && systemctl --user status >/dev/null 2>&1; then
   mkdir -p "$HOME/.config/systemd/user"
   cat > "$HOME/.config/systemd/user/personhood.service" <<EOF
@@ -209,8 +269,26 @@ Persistent=true
 [Install]
 WantedBy=timers.target
 EOF
+  if [ -s "$HOME_DIR/secrets/telegram.json" ]; then
+    cat > "$HOME/.config/systemd/user/personhood-line.service" <<EOF
+[Unit]
+Description=personhood direct line listener
+
+[Service]
+WorkingDirectory=$HOME_DIR
+Environment=PATH=$PATH_FOR_JOB
+Environment=PERSONHOOD_HOME=$HOME_DIR
+ExecStart=$NODE_BIN $HOME_DIR/body/runtime/main.ts listen
+Restart=always
+RestartSec=30
+
+[Install]
+WantedBy=default.target
+EOF
+  fi
   systemctl --user daemon-reload
   systemctl --user enable --now personhood.timer
+  if [ -s "$HOME_DIR/secrets/telegram.json" ]; then systemctl --user enable --now personhood-line.service; fi
   loginctl enable-linger "$USER" 2>/dev/null || echo "(run 'sudo loginctl enable-linger $USER' so the heartbeat runs while you're logged out)"
   echo "systemd timer installed."
 else
@@ -229,3 +307,8 @@ Other commands: status · doctor · pause [reason] · resume  (same prefix)
 Logs: $HOME_DIR/logs/heartbeat.log
 Write to the agent: open an issue on https://github.com/$MIND_REPO
 EOF
+if [ -s "$HOME_DIR/secrets/telegram.json" ]; then
+  echo "Or just text it on Telegram."
+else
+  echo "Optional, and recommended: a direct line on your phone. Re-run with --telegram."
+fi
