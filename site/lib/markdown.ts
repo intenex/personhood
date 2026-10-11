@@ -70,13 +70,23 @@ export function renderMarkdown(source: string, ctx: MarkdownContext): string {
  * and backslashes and stripping control characters and whitespace, so encoded
  * tricks like "jav&#x61;script:" can't slip through.
  */
+const codePoint = (n: number): string => (Number.isInteger(n) && n > 0 && n <= 0x10ffff ? String.fromCodePoint(n) : '\ufffd');
+
 export function isSafeHref(href: string): boolean {
+  try {
+    return schemeAllowed(href);
+  } catch {
+    return false;
+  }
+}
+
+function schemeAllowed(href: string): boolean {
   let s = href;
   for (let i = 0; i < 3; i++) {
     const before = s;
     s = s
-      .replace(/&#x([0-9a-f]+);?/gi, (_, h) => String.fromCodePoint(parseInt(h, 16) || 0))
-      .replace(/&#(\d+);?/g, (_, d) => String.fromCodePoint(Number(d) || 0))
+      .replace(/&#x([0-9a-f]{1,8});?/gi, (_, h) => codePoint(parseInt(h, 16)))
+      .replace(/&#(\d{1,10});?/g, (_, d) => codePoint(Number(d)))
       .replace(/&(colon|tab|newline|nbsp);?/gi, (_, n) => ({ colon: ':', tab: '\t', newline: '\n', nbsp: ' ' })[n.toLowerCase() as 'colon'] ?? '')
       .replace(/%([0-9a-f]{2})/gi, (_, h) => String.fromCharCode(parseInt(h, 16)))
       .replace(/\\/g, '');

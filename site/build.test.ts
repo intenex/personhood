@@ -491,6 +491,9 @@ test('link scheme allowlist resists encoded payloads', async () => {
   for (const bad of ['javascript:alert(1)', 'jav&#x61;script:alert(1)', 'jav&#97;script:x', 'java%73cript:x', ' \tjavascript:x', 'java\nscript:x', 'JaVaScRiPt:x', 'vbscript:x', 'data:text/html,x', 'javascript&colon;x', 'jav\\ascript:x']) {
     assert.equal(isSafeHref(bad), false, bad);
   }
+  // Out-of-range character references must not crash the build.
+  assert.equal(isSafeHref('&#99999999999;javascript:x'), false);
+  assert.equal(isSafeHref('&#x110000;'), true);
   for (const ok of ['https://example.com', 'http://x.y/z', 'mailto:a@b.c', '/posts/x/', 'notes/y', '#top', '?q=1', 'portrait.svg']) {
     assert.equal(isSafeHref(ok), true, ok);
   }
