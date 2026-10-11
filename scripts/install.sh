@@ -4,6 +4,7 @@
 #   scripts/install.sh            set up everything that's missing
 #   scripts/install.sh --token    (re)enter the agent's Claude token
 #   scripts/install.sh --telegram (re)pair a Telegram bot: a direct line between you and the agent
+#   scripts/install.sh --lab      rebuild the agent's lab (its Linux VM) from scratch
 #   scripts/install.sh --unschedule   stop the heartbeat (and the line's listener)
 #
 # Works on macOS (launchd) and Linux (systemd user timer, or cron). Safe to re-run.
@@ -21,11 +22,13 @@ OS="$(uname -s)"
 
 want_token=0
 want_telegram=0
+want_lab=0
 unschedule=0
 for arg in "$@"; do
   case "$arg" in
     --token) want_token=1 ;;
     --telegram) want_telegram=1 ;;
+    --lab) want_lab=1 ;;
     --unschedule) unschedule=1 ;;
     *) echo "unknown option: $arg" >&2; exit 2 ;;
   esac
@@ -45,6 +48,7 @@ unschedule_heartbeat() {
     rm -f "$HOME/.config/systemd/user/personhood.service" "$HOME/.config/systemd/user/personhood.timer" "$HOME/.config/systemd/user/personhood-line.service"
     (crontab -l 2>/dev/null | grep -v 'personhood/body/runtime/main.ts tick') | crontab - 2>/dev/null || true
   fi
+  command -v limactl >/dev/null 2>&1 && limactl stop lab >/dev/null 2>&1 || true
   echo "heartbeat stopped"
 }
 
@@ -158,6 +162,34 @@ EOF
   printf '%s' "${tg_token:-}" | PERSONHOOD_HOME="$HOME_DIR" node "$HOME_DIR/body/runtime/main.ts" line pair \
     || echo "(pairing didn't finish; run scripts/install.sh --telegram again)"
   unset tg_token
+fi
+
+# The lab: a Linux VM where the agent can run code and install anything, sharing nothing with this machine.
+cfg_lab() { node -p "const l = require('$HOME_DIR/body/config/life.json').lab || {}; String(l.$1 ?? '$2')"; }
+if [ "$(cfg_lab enabled false)" = "true" ]; then
+  if ! command -v limactl >/dev/null 2>&1 && command -v brew >/dev/null 2>&1; then
+    say "Installing Lima, for the agent's lab"
+    brew install lima
+  fi
+  if command -v limactl >/dev/null 2>&1; then
+    LAB="$(cfg_lab instance lab)"
+    if [ "$want_lab" = 1 ] && limactl list --format '{{.Name}}' 2>/dev/null | grep -qx "$LAB"; then
+      printf 'Rebuild the lab from scratch? Everything installed or saved in it will be erased. [y/N] '
+      read -r answer
+      if [ "$answer" = y ] || [ "$answer" = Y ]; then limactl delete --force "$LAB"; fi
+    fi
+    if ! limactl list --format '{{.Name}}' 2>/dev/null | grep -qx "$LAB"; then
+      say "Building the lab: a Linux computer of its own, sharing nothing with this one (a few minutes)"
+      # --mount-none: no folder of this machine is visible inside it. No agent forwarding: no keys either.
+      limactl create --name="$LAB" --tty=false --mount-none \
+        --cpus="$(cfg_lab cpus 4)" --memory="$(cfg_lab memoryGiB 3)" --disk="$(cfg_lab diskGiB 64)" \
+        --set '.ssh.forwardAgent = false' template:ubuntu-lts
+    fi
+    limactl start --tty=false "$LAB" >/dev/null 2>&1 || limactl start --tty=false "$LAB"
+    echo "The lab is running."
+  else
+    echo "To give the agent a lab for running code, install Lima (https://lima-vm.io) and re-run this script."
+  fi
 fi
 
 say "Checking the installation"
