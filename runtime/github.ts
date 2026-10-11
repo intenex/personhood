@@ -38,6 +38,8 @@ export interface GitHubLike {
   createComment(repo: string, number: number, body: string): Promise<Comment>;
   createIssue(repo: string, title: string, body: string, labels?: string[]): Promise<Issue>;
   addLabels(repo: string, number: number, labels: string[]): Promise<void>;
+  /** The account this token acts as (the agent's own, or Ben's). */
+  login?(): Promise<string>;
 }
 
 export function resolveGitHubToken(env: NodeJS.ProcessEnv = process.env): string | null {
@@ -52,6 +54,7 @@ export function resolveGitHubToken(env: NodeJS.ProcessEnv = process.env): string
 
 export class GitHub implements GitHubLike {
   private readonly token: string;
+  private me?: Promise<string>;
 
   constructor(token: string) {
     this.token = token;
@@ -90,6 +93,11 @@ export class GitHub implements GitHubLike {
     if (opts.labels) q.set("labels", opts.labels);
     const issues = await this.paged<Issue>(`/repos/${repo}/issues?${q}`);
     return issues.filter((i) => !i.pull_request);
+  }
+
+  login(): Promise<string> {
+    this.me ??= this.req<{ login: string }>("GET", "/user").then((u) => u.login);
+    return this.me;
   }
 
   getIssue(repo: string, number: number): Promise<Issue> {

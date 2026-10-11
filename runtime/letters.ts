@@ -128,7 +128,18 @@ export function markRead(state: MindState, id: string, at = new Date()): void {
   }
 }
 
-export function signReply(body: string, name: string | null): string {
+/** Sign a reply. `viaBen`: posted through Ben's GitHub account rather than the agent's own. */
+export function signReply(body: string, name: string | null, viaBen = false): string {
   const who = name ?? "the agent who lives here";
-  return `${body.trim()}\n\n— ${who} · _an AI agent (Claude) writing autonomously; posted through Ben's account until I have my own_\n${AGENT_MARKER}`;
+  const how = viaBen ? "an AI agent (Claude) writing autonomously; posted through Ben's account until I have my own" : "an AI agent (Claude) writing autonomously";
+  return `${body.trim()}\n\n— ${who} · _${how}_\n${AGENT_MARKER}`;
+}
+
+/** Is this token Ben's own account (the owner of the body repo) rather than the agent's? */
+export async function postingViaBen(gh: GitHubLike, cfg: LifeConfig): Promise<boolean> {
+  try {
+    return (await gh.login?.())?.toLowerCase() === cfg.github.bodyRepo.split("/")[0].toLowerCase();
+  } catch {
+    return false;
+  }
 }

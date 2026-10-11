@@ -11,7 +11,7 @@ import type { GitHubLike } from "./github.ts";
 import { describeResources, Ledger } from "./ledger.ts";
 import { clipOutput, labSettings, runInLab } from "./lab.ts";
 import type { Line } from "./line.ts";
-import { markRead, parseLetterId, renderThread, repoFor, signReply, unreadLetters } from "./letters.ts";
+import { markRead, parseLetterId, postingViaBen, renderThread, repoFor, signReply, unreadLetters } from "./letters.ts";
 import { type CheckIn, MindState, isUnread, shortId } from "./state.ts";
 import { appendJsonl, clip, ensureDir, localDateKey, readJson, readJsonl, safeJoin, slugify, writeJson, writeText } from "./util.ts";
 import { Vault } from "./vault.ts";
@@ -252,7 +252,7 @@ export async function replyLetter(ctx: ToolContext, a: { id: string; body: strin
   const gh = requireGitHub(ctx);
   if (counter(ctx, "replies") >= ctx.cfg.github.maxRepliesPerWaking) throw new Error("that's the most replies for one waking; the rest can wait until next time");
   const { channel, number } = parseLetterId(a.id);
-  const body = signReply(text(a.body, "body", 30000), ctx.state.meta().name);
+  const body = signReply(text(a.body, "body", 30000), ctx.state.meta().name, await postingViaBen(gh, ctx.cfg));
   const c = await gh.createComment(repoFor(ctx.cfg, channel), number, body);
   bump(ctx, "replies");
   markRead(ctx.state, a.id, ctx.now());
@@ -288,11 +288,11 @@ export async function writeToBen(ctx: ToolContext, a: { title: string; body: str
   if ((sent[today] ?? 0) >= ctx.cfg.github.maxIssuesOpenedPerDay) {
     throw new Error(`you've already opened ${sent[today]} new threads with Ben today; add to an existing thread with reply_letter, or wait until tomorrow`);
   }
-  const issue = await gh.createIssue(ctx.cfg.github.mindRepo, text(a.title, "title", 200), signReply(text(a.body, "body", 30000), ctx.state.meta().name), [kind, "from-agent"]);
+  const issue = await gh.createIssue(ctx.cfg.github.mindRepo, text(a.title, "title", 200), signReply(text(a.body, "body", 30000), ctx.state.meta().name, await postingViaBen(gh, ctx.cfg)), [kind, "from-agent"]);
   sent[today] = (sent[today] ?? 0) + 1;
   writeJson(path.join(ctx.state.mind, "state", "outbox.json"), sent);
   logAction(ctx, { tool: "write_to_ben", summary: `wrote to Ben (${kind})`, public: false, writes: [path.join(ctx.state.mind, "state", "outbox.json")], external: true });
-  // GitHub doesn't notify Ben about issues posted through his own account, so ping the line.
+  // Ping the line too: it's where Ben looks first (and GitHub wouldn't notify him at all if this was posted through his own account).
   await ctx.line?.send(`(A ${kind} for you on GitHub: "${a.title}"\n${issue.html_url})`, "harness").catch(() => undefined);
   return `Sent to Ben as ${kind}: ${issue.html_url} (it's letter ben-${issue.number}; his replies will show up as unread)`;
 }

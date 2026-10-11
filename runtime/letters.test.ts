@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { loadConfig } from "./config.ts";
 import { AGENT_MARKER, type Comment, type GitHubLike, type Issue } from "./github.ts";
-import { markPresented, markRead, signReply, syncLetters, unreadLetters } from "./letters.ts";
+import { markPresented, markRead, postingViaBen, signReply, syncLetters, unreadLetters } from "./letters.ts";
 import { MindState } from "./state.ts";
 import { REPO, tmp } from "./test/helpers.ts";
 
@@ -50,9 +50,18 @@ test("letters: unread, agent-opened, harness alerts, replies", async () => {
   assert.deepEqual(unreadLetters(state), []);
 });
 
-test("signed replies carry the marker and a disclosure", () => {
+test("signed replies carry the marker and a disclosure, and say whose account posted them", () => {
   const s = signReply("Hello.", "Wren");
   assert.match(s, /— Wren/);
-  assert.match(s, /an AI agent \(Claude\) writing autonomously/);
+  assert.match(s, /an AI agent \(Claude\) writing autonomously_/);
+  assert.doesNotMatch(s, /Ben's account/, "on its own GitHub account, it doesn't claim to post through Ben's");
   assert.ok(s.includes(AGENT_MARKER));
+  assert.match(signReply("Hello.", "Wren", true), /posted through Ben's account/);
+});
+
+test("whose account: the body repo's owner is Ben", async () => {
+  const gh = (login: string) => ({ ...fakeGitHub({}, {}), login: async () => login });
+  assert.equal(await postingViaBen(gh("intenex"), cfg), true);
+  assert.equal(await postingViaBen(gh("rocksandpeanuts"), cfg), false);
+  assert.equal(await postingViaBen(fakeGitHub({}, {}), cfg), false);
 });

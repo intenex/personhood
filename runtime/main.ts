@@ -672,6 +672,12 @@ async function doctor(c: Ctx): Promise<boolean> {
   const pre = await authPreflight(c.cfg, auth);
   check(pre.ok, `Claude Code login works for the agent (${pre.method})`, pre.detail);
   check(!!c.gh, "GitHub access for letters", "log in with `gh auth login`");
+  // The heartbeat pulls and pushes with nobody at the keyboard: no passphrase or host-key prompts allowed.
+  for (const [name, dir] of [["body", c.paths.body], ["mind", c.paths.mind]] as const) {
+    if (!isRepo(dir)) continue;
+    const r = spawnSync("git", ["-C", dir, "ls-remote", "--exit-code", "origin", "HEAD"], { env: { ...process.env, GIT_TERMINAL_PROMPT: "0", GIT_SSH_COMMAND: "ssh -o BatchMode=yes" }, encoding: "utf8", timeout: 60_000 });
+    check(r.status === 0, `git reaches the ${name} repo without any prompt (as the heartbeat must)`, "if your SSH key has a passphrase, the heartbeat can't unlock it; see \"If git asks for anything\" in docs/dedicated-mac.md");
+  }
   if (c.gh) {
     for (const repo of [c.cfg.github.bodyRepo, c.cfg.github.mindRepo]) {
       try {

@@ -80,6 +80,22 @@ fi
 
 if [ ! -d "$HOME_DIR/mind/.git" ]; then
   if ! gh repo view "$MIND_REPO" >/dev/null 2>&1; then
+    me="$(gh api user --jq .login 2>/dev/null || true)"
+    owner="${MIND_REPO%%/*}"
+    if [ "$(printf '%s' "$me" | tr '[:upper:]' '[:lower:]')" != "$(printf '%s' "$owner" | tr '[:upper:]' '[:lower:]')" ]; then
+      # Logged in as the agent's own GitHub account: it can't create repositories in Ben's name.
+      cat <<EOF >&2
+
+The mind repository $MIND_REPO doesn't exist yet, or ${me:-this account} can't see it.
+As $owner (on your own computer), create it empty and private, and invite ${me:-the agent's account} to it:
+
+    gh repo create $MIND_REPO --private
+    gh api -X PUT repos/$MIND_REPO/collaborators/${me:-ACCOUNT} -f permission=push
+
+Then accept the invitation here as ${me:-that account} (https://github.com/$MIND_REPO/invitations) and run this script again.
+EOF
+      exit 1
+    fi
     say "Creating the private mind repository ($MIND_REPO)"
     tmp="$(mktemp -d)"
     cp -R "$HOME_DIR/body/seed/mind/." "$tmp/"
