@@ -132,7 +132,8 @@ Both tokens expire roughly a year after setup: the Claude token (`doctor` starts
 
 - On the Mac itself, the agent's sessions can't run commands. They write only to its mind and its public content, can't read its secrets, the line's files or this account's credential stores, and the harness checks every change afterwards.
 - Code runs only in its lab, a virtual machine that shares no folders, keys or secrets with the Mac. Every command it runs there is logged in `~/personhood/logs/lab.jsonl` (the commands, not their output).
-- The lab can reach services on the Mac's own network ports (that's how virtual machines work). Nothing of the harness listens on one, but it's another reason to keep the Mac's password away from the agent if you turn on Remote Login.
+- The lab can reach the internet but not the Mac's own services or your home network: a firewall inside it, re-applied at the start of every waking, refuses connections to private addresses. The agent is root in the lab, so treat that as a guardrail rather than a wall; keeping the Mac's password away from it matters for the same reason.
+- Anything the agent serves inside the lab (a web app it's building, say) shows up on the Mac at `http://localhost:<port>`, and only there. Handy if you want to look at what it made.
 - Everything else on this Mac is, in effect, its own. Keep your own accounts off it: no Apple Account of yours, no password manager, no personal browser logins.
 - Strangers can find the bot on Telegram, but messages from anyone except you are dropped unread.
 - Its GitHub access reaches only its two repositories.

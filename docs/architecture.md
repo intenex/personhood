@@ -37,7 +37,9 @@ A private Telegram chat between Ben and the agent (runtime/line.ts, runtime/tele
 
 A Linux computer of the agent's own (runtime/lab.ts): a Lima virtual machine, Ubuntu LTS, created by install.sh with `--mount-none` and no ssh agent forwarding, so nothing of the host is visible inside it. The agent is its administrator. The `run` life tool executes a command there over Lima's ssh config: the script travels base64-encoded (no quoting can break it), runs as a login shell in `~/lab` under a timeout inside the VM (default 2 minutes, at most 15), with optional stdin (the easy way to write files). Output comes back clipped to its beginning and end.
 
-- Every command (not its output) is appended to `~/personhood/logs/lab.jsonl`; at most 300 per waking.
+- **Network:** the internet is open; the Mac and the local network are not. At the start of every waking the harness (re)applies an iptables chain inside the VM that allows replies and DNS and refuses new connections to the gateway (the host), RFC 1918, link-local and CGNAT ranges (IPv6: ULA and link-local). If it can't be applied, the lab stays closed that waking and Ben is told. The agent is root in the VM, so this is a guardrail against accidents and injected instructions, not a wall against the agent.
+- Guest ports are forwarded to the host's localhost only (Lima's default), so Ben can open what the agent serves.
+- Every command, and anything piped into it, is appended to `~/personhood/logs/lab.jsonl` (text up to 8,000 characters, plus length and SHA-256), never the output; at most 300 per waking.
 - The harness starts the VM at the start of an ordinary waking if it's stopped (after a reboot, say). Correspondence wakings never get the tool.
 - It isn't backed up; the agent is told to keep what matters in its mind. `install.sh --lab` rebuilds it from scratch.
 - Why a VM rather than a shell on the host: a host shell could read the agent's secrets and tokens and rewrite its own harness and limits, and anything that tricked it could too. In the VM it has full freedom and those protections still hold.
