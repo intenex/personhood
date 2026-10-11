@@ -113,7 +113,8 @@ function abs(p: string): string {
   return `/${path.resolve(p)}`;
 }
 
-export function buildSettings(paths: Paths, mode: WakeMode = "ordinary"): object {
+/** `isolated`: the session uses the agent's own config dir, not someone's default ~/.claude. */
+export function buildSettings(paths: Paths, mode: WakeMode = "ordinary", isolated = false): object {
   const correspondence = mode === "correspondence";
   const mind = (p: string) => abs(path.join(paths.mind, p));
   const body = (p: string) => abs(path.join(paths.body, p));
@@ -149,8 +150,9 @@ export function buildSettings(paths: Paths, mode: WakeMode = "ordinary"): object
     permissions: { defaultMode: "dontAsk", allow, deny },
     includeCoAuthoredBy: false,
     // The harness vaults each transcript and deletes Claude Code's plaintext copy right after a
-    // waking (purgeLocalTranscripts); this is the backstop if it ever can't.
-    cleanupPeriodDays: 2,
+    // waking (purgeLocalTranscripts); this is the backstop if it ever can't. Only in the agent's
+    // own config dir: in a shared one it would prune the owner's own history.
+    ...(isolated ? { cleanupPeriodDays: 2 } : {}),
   };
 }
 
@@ -186,13 +188,15 @@ export interface WakeSpec {
   sessionDir: string;
   maxTurns?: number;
   maxBudgetUsd?: number;
+  /** Running in the agent's own config dir (see buildSettings). */
+  isolated?: boolean;
 }
 
 export function buildWakeArgs(cfg: LifeConfig, paths: Paths, spec: WakeSpec, sessionId: string): string[] {
   const settingsFile = path.join(spec.sessionDir, "settings.json");
   const mcpFile = path.join(spec.sessionDir, "mcp.json");
   const systemFile = path.join(spec.sessionDir, "system-prompt.md");
-  writeJson(settingsFile, buildSettings(paths, spec.mode));
+  writeJson(settingsFile, buildSettings(paths, spec.mode, spec.isolated));
   writeJson(mcpFile, buildMcpConfig(paths, spec.sessionDir));
   fs.writeFileSync(systemFile, spec.systemPrompt);
   return [

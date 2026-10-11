@@ -90,3 +90,9 @@ test("purging transcripts: everything in the agent's own config dir, only its se
   assert.ok(!fs.existsSync(path.join(dir, "projects")));
   assert.ok(fs.existsSync(path.join(dir, ".claude.json")), "settings and login state stay");
 });
+
+test("the short transcript retention applies only in the agent's own config dir", () => {
+  const { paths } = makeHome();
+  assert.equal((buildSettings(paths, "ordinary", true) as { cleanupPeriodDays?: number }).cleanupPeriodDays, 2);
+  assert.equal((buildSettings(paths, "ordinary", false) as { cleanupPeriodDays?: number }).cleanupPeriodDays, undefined, "never prune someone else's history");
+});

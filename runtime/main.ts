@@ -283,7 +283,7 @@ export async function wake(c: Ctx, decision: Decision): Promise<void> {
   });
 
   const sessionId = newSessionId();
-  const args = buildWakeArgs(cfg, paths, { mode: decision.mode, systemPrompt: sys, prompt, effort: decision.effort, sessionDir, maxBudgetUsd: decision.mode === "birth" ? cfg.brain.maxBudgetUsdPerWaking * 2 : undefined }, sessionId);
+  const args = buildWakeArgs(cfg, paths, { mode: decision.mode, systemPrompt: sys, prompt, effort: decision.effort, sessionDir, maxBudgetUsd: decision.mode === "birth" ? cfg.brain.maxBudgetUsdPerWaking * 2 : undefined, isolated: auth.env.CLAUDE_CONFIG_DIR === paths.claudeConfig }, sessionId);
   fs.writeFileSync(path.join(sessionDir, "prompt.md"), prompt);
   const res = await runClaude(cfg, args, { cwd: paths.mind, env: auth.env, input: prompt, timeoutMs: cfg.brain.timeoutMinutes * 60_000 });
   const end = new Date();
