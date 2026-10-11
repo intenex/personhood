@@ -60,6 +60,18 @@ export interface LifeConfig {
     maxIssuesOpenedPerDay: number;
   };
   site: { url: string };
+  /** The lab: a Linux VM of the agent's own for running code (see lab.ts). */
+  lab?: Partial<{
+    enabled: boolean;
+    instance: string;
+    cpus: number;
+    memoryGiB: number;
+    diskGiB: number;
+    maxCommandsPerWaking: number;
+    defaultTimeoutSeconds: number;
+    maxTimeoutSeconds: number;
+    outputChars: number;
+  }>;
   /** The direct line to Ben (Telegram), when it's set up. */
   line?: {
     /** Messages the agent can send Ben per day. */

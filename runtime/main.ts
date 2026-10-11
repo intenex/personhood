@@ -25,6 +25,7 @@ import { enforce, isBodyPathAllowed, isMindPathAllowed } from "./guard.ts";
 import { agentAuthor, commit, isRepo, pull, sync } from "./git.ts";
 import { describeResources, Ledger } from "./ledger.ts";
 import { markPresented, syncLetters, unreadLetters } from "./letters.ts";
+import { ensureLab, labExists } from "./lab.ts";
 import { HELP_TEXT, Line, type LineEvent, loadLineSecrets, pair, renderConversation } from "./line.ts";
 import { sessionActions, type Session, type SleepRecord } from "./life-tools.ts";
 import { log, setLogDir } from "./log.ts";
@@ -253,7 +254,14 @@ export async function wake(c: Ctx, decision: Decision): Promise<void> {
 
   const sessionDir = path.join(paths.run, `${start.toISOString().replace(/[:.]/g, "-")}-w${waking}`);
   ensureDir(sessionDir);
-  const session: Session = { waking, mode: decision.mode, startedAt: start.toISOString(), effort: decision.effort, dir: sessionDir };
+  // The lab (its Linux VM) for ordinary wakings; correspondence never gets to run code.
+  let lab = false;
+  if (decision.mode !== "correspondence" && labExists(cfg)) {
+    const r = ensureLab(cfg);
+    lab = r.ok;
+    if (!r.ok) log(`lab: ${r.detail}`);
+  }
+  const session: Session = { waking, mode: decision.mode, startedAt: start.toISOString(), effort: decision.effort, dir: sessionDir, lab };
   writeJson(path.join(sessionDir, "session.json"), session);
   // Commit harness state first, so the guard's "revert to HEAD" after the session
   // only ever undoes what happened during it.
@@ -267,7 +275,7 @@ export async function wake(c: Ctx, decision: Decision): Promise<void> {
   const correspondence = decision.mode === "correspondence";
   const lineNew = c.line && !correspondence ? c.line.unreadFromBen() : [];
   const lineText = c.line && !correspondence ? renderConversation(c.line.log(), c.line.state().presentedThrough, lineSettings(cfg).historyInPrompt) : "";
-  const sys = systemPrompt(cfg, paths, decision.mode, { line: !!c.line });
+  const sys = systemPrompt(cfg, paths, decision.mode, { line: !!c.line, lab });
   const prompt = wakingPrompt({
     cfg,
     instruments: c.inst,
@@ -670,6 +678,10 @@ async function doctor(c: Ctx): Promise<boolean> {
       }
     }
   }
+  if (labExists(c.cfg)) {
+    const r = ensureLab(c.cfg);
+    check(r.ok, `the lab (its Linux VM) is ${r.detail}`, "see ~/.lima/lab/ha.stderr.log, or rebuild it with scripts/install.sh --lab");
+  } else console.log("· the lab: not set up (scripts/install.sh --lab)");
   const lineSecrets = loadLineSecrets(c.paths);
   if (!lineSecrets) console.log("· direct line: not set up (optional: scripts/install.sh --telegram)");
   else {

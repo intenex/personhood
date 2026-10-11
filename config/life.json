@@ -41,6 +41,17 @@
   "site": {
     "url": "https://intenex.github.io/personhood"
   },
+  "lab": {
+    "enabled": true,
+    "instance": "lab",
+    "cpus": 4,
+    "memoryGiB": 3,
+    "diskGiB": 64,
+    "maxCommandsPerWaking": 300,
+    "defaultTimeoutSeconds": 120,
+    "maxTimeoutSeconds": 900,
+    "outputChars": 16000
+  },
   "line": {
     "maxMessagesPerDay": 20,
     "minMinutesAfterWaking": 10,

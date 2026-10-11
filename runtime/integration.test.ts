@@ -175,3 +175,31 @@ test("the direct line: Ben's text wakes the agent, it replies, and /status is an
     server.close();
   }
 });
+
+test("the lab: an ordinary waking gets it and its commands are logged; correspondence doesn't", () => {
+  const { paths } = makeHome();
+  fs.writeFileSync(path.join(paths.secrets, "claude-token"), "fake-token");
+  const labHome = path.join(paths.home, "lab-home");
+  fs.mkdirSync(labHome);
+  const ssh = path.join(paths.home, "fake-ssh");
+  fs.writeFileSync(ssh, `#!/bin/bash\nfor last; do :; done\nexport HOME="${labHome}"\nexec bash -c "$last"\n`);
+  fs.chmodSync(ssh, 0o755);
+  const env = { ...envFor(paths), PERSONHOOD_CLAUDE_COMMAND: fakeClaude(paths.home), PERSONHOOD_OFFLINE: "1", PERSONHOOD_KEEP_RUN: "1", PERSONHOOD_LAB_SSH: ssh };
+  run(["wake"], env); // birth
+  new MindState(paths.mind).updateMeta((m) => {
+    m.lastWakeEnd = "2026-01-01T00:00:00Z";
+  });
+  const script = JSON.stringify([{ tool: "run", args: { command: "cat > note.txt", stdin: "made in the lab" } }]);
+  run(["wake", "ordinary", "trying the lab"], { ...env, FAKE_SCRIPT: script });
+  assert.equal(fs.readFileSync(path.join(labHome, "lab", "note.txt"), "utf8"), "made in the lab");
+  assert.match(fs.readFileSync(path.join(paths.logs, "lab.jsonl"), "utf8"), /"command":"cat > note.txt"/);
+  const w2 = fs.readdirSync(paths.run).find((d) => d.endsWith("-w2"))!;
+  assert.match(fs.readFileSync(path.join(paths.run, w2, "system-prompt.md"), "utf8"), /\*\*Your lab\*\* is a Linux computer of your own/);
+  new MindState(paths.mind).updateMeta((m) => {
+    m.lastWakeEnd = "2026-01-01T00:00:00Z";
+  });
+  run(["wake", "correspondence", "letters"], env);
+  const w3 = fs.readdirSync(paths.run).find((d) => d.endsWith("-w3"))!;
+  assert.equal(JSON.parse(fs.readFileSync(path.join(paths.run, w3, "session.json"), "utf8")).lab, false);
+  assert.match(fs.readFileSync(path.join(paths.run, w3, "system-prompt.md"), "utf8"), /can't run shell commands or code this waking/);
+});

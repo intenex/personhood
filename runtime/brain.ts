@@ -156,6 +156,10 @@ export function buildSettings(paths: Paths, mode: WakeMode = "ordinary", isolate
   };
 }
 
+function passThrough(names: string[]): Record<string, string> {
+  return Object.fromEntries(names.filter((n) => process.env[n]).map((n) => [n, process.env[n]!]));
+}
+
 export function buildMcpConfig(paths: Paths, sessionDir: string, extraEnv: Record<string, string> = {}): object {
   return {
     mcpServers: {
@@ -171,8 +175,9 @@ export function buildMcpConfig(paths: Paths, sessionDir: string, extraEnv: Recor
           PERSONHOOD_RUN: paths.run,
           PERSONHOOD_CLAUDE_CONFIG: paths.claudeConfig,
           PERSONHOOD_LINE: paths.line,
+          PERSONHOOD_LOGS: paths.logs,
           PERSONHOOD_SESSION_DIR: sessionDir,
-          ...(process.env.PERSONHOOD_TELEGRAM_API ? { PERSONHOOD_TELEGRAM_API: process.env.PERSONHOOD_TELEGRAM_API } : {}),
+          ...passThrough(["PERSONHOOD_TELEGRAM_API", "LIMA_HOME", "PERSONHOOD_LAB_SSH"]),
           ...extraEnv,
         },
       },

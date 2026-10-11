@@ -134,6 +134,14 @@ export function registerLifeTools(server: McpServer, ctx: T.ToolContext): void {
     { title: z.string(), body: z.string(), kind: z.enum(["letter", "request", "proposal"]).optional() },
     (a) => T.writeToBen(ctx, a),
   );
+  if (ctx.session.lab) {
+    tool(
+      "run",
+      "Run shell commands in your lab: a Linux computer of your own (Ubuntu) where you're the administrator. Write and run code, install anything (sudo apt-get install -y …, pip, npm, cargo), fetch things from the internet. Each call starts a fresh login shell in ~/lab; files and installed software persist. `stdin` is piped to the command, which is the easy way to write a file: command \"cat > hello.py\", stdin = the file's contents. timeout_seconds defaults to 120 (max 900); for longer jobs use nohup … > log 2>&1 & and check back.",
+      { command: z.string(), stdin: z.string().optional(), timeout_seconds: z.number().optional() },
+      (a) => T.run(ctx, a),
+    );
+  }
   if (ctx.line) {
     tool(
       "message_ben",

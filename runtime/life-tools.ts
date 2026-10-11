@@ -9,6 +9,7 @@ import YAML from "yaml";
 import { EFFORTS, type Effort, type Instruments, type LifeConfig, lineSettings, type Paths } from "./config.ts";
 import type { GitHubLike } from "./github.ts";
 import { describeResources, Ledger } from "./ledger.ts";
+import { clipOutput, labSettings, runInLab } from "./lab.ts";
 import type { Line } from "./line.ts";
 import { markRead, parseLetterId, renderThread, repoFor, signReply, unreadLetters } from "./letters.ts";
 import { type CheckIn, MindState, isUnread, shortId } from "./state.ts";
@@ -22,6 +23,8 @@ export interface Session {
   startedAt: string;
   effort: Effort;
   dir: string;
+  /** The lab was running when this waking began. */
+  lab?: boolean;
 }
 
 export interface ReaderResult {
@@ -292,6 +295,27 @@ export async function writeToBen(ctx: ToolContext, a: { title: string; body: str
   // GitHub doesn't notify Ben about issues posted through his own account, so ping the line.
   await ctx.line?.send(`(A ${kind} for you on GitHub: "${a.title}"\n${issue.html_url})`, "harness").catch(() => undefined);
   return `Sent to Ben as ${kind}: ${issue.html_url} (it's letter ben-${issue.number}; his replies will show up as unread)`;
+}
+
+// ---------- the lab ----------
+
+export async function run(ctx: ToolContext, a: { command: string; stdin?: string; timeout_seconds?: number }): Promise<string> {
+  if (!ctx.session.lab) throw new Error("your lab isn't available this waking");
+  const s = labSettings(ctx.cfg);
+  const used = sessionActions(ctx.session.dir).filter((x) => x.tool === "run").length;
+  if (used >= s.maxCommandsPerWaking) throw new Error(`that's ${used} commands this waking, the limit; the lab will still be there next time`);
+  const command = text(a.command, "command", 200_000);
+  const r = await runInLab(ctx.cfg, { command, stdin: a.stdin, timeoutSeconds: a.timeout_seconds });
+  logAction(ctx, { tool: "run", summary: "ran code in the lab", public: false, writes: [], external: true });
+  // Actions in the world are on the record: the command (never its output) is logged for Ben.
+  appendJsonl(path.join(ctx.paths.logs, "lab.jsonl"), { t: ctx.now().toISOString(), waking: ctx.session.waking, command: clip(command, 2000), exit: r.exitCode, seconds: r.seconds });
+  const both = !!(r.stdout && r.stderr);
+  const room = both ? Math.floor(s.outputChars / 2) : s.outputChars;
+  const parts = [`exit ${r.exitCode ?? "(none)"}${r.timedOut ? " (timed out)" : ""} · ${r.seconds}s`];
+  if (r.stdout) parts.push(`--- stdout ---\n${clipOutput(r.stdout, room)}`);
+  if (r.stderr) parts.push(`--- stderr ---\n${clipOutput(r.stderr, room)}`);
+  if (!r.stdout && !r.stderr) parts.push("(no output)");
+  return parts.join("\n");
 }
 
 // ---------- the direct line ----------
