@@ -31,6 +31,8 @@ export function appendWakingLog(paths: Paths, e: WakingLogEntry): void {
 export function exportPublicData(cfg: LifeConfig, paths: Paths, state: MindState, ledger: Ledger, awake = false): void {
   const data = (f: string) => path.join(paths.body, "content", "data", f);
   const m = state.meta();
+  // Proof of life for the watchdog (.github/workflows/watch.yml), refreshed at least daily.
+  writeJson(data("heartbeat.json"), { checked: new Date().toISOString() });
   writeJson(data("status.json"), {
     name: m.name,
     born: m.born,

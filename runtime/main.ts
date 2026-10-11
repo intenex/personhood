@@ -9,10 +9,11 @@
 //   node runtime/main.ts probe                run the preference probe now
 //   node runtime/main.ts export               regenerate public data
 
+import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import YAML from "yaml";
-import { authPreflight, brainEnv, buildWakeArgs, findTranscript, newSessionId, runClaude, type WakeMode } from "./brain.ts";
+import { authPreflight, brainEnv, buildWakeArgs, cleanEnv, findTranscript, newSessionId, runClaude, type WakeMode } from "./brain.ts";
 import { loadConfig, loadInstruments, resolvePaths, type LifeConfig, type Paths, type Instruments } from "./config.ts";
 import { condenseTranscript, episodesSince, saveTranscript, writeEpisode } from "./episodes.ts";
 import { GitHub, resolveGitHubToken, type GitHubLike } from "./github.ts";
@@ -27,7 +28,7 @@ import { systemPrompt, wakingPrompt } from "./prompt.ts";
 import { appendWakingLog, exportPublicData } from "./publicdata.ts";
 import { MindState } from "./state.ts";
 import { decide, type Decision } from "./stimuli.ts";
-import { appendJsonl, ensureDir, localDateKey, readJson, readTextOr, writeJson } from "./util.ts";
+import { appendJsonl, clip, ensureDir, hoursBetween, localDateKey, readJson, readTextOr, writeJson } from "./util.ts";
 import { loadVaultKey, Vault } from "./vault.ts";
 
 interface Ctx {
@@ -110,10 +111,30 @@ async function tick(c: Ctx): Promise<void> {
 function dailyHousekeeping(c: Ctx): void {
   const file = path.join(c.paths.mind, "state", "housekeeping.json");
   const today = localDateKey(new Date());
-  if (readJson<{ day?: string }>(file, {}).day === today) return;
+  const done = readJson<{ day?: string; claudeUpdated?: string }>(file, {});
+  if (done.day === today) return;
+  const claudeUpdated = maybeUpdateClaude(c, done.claudeUpdated) ?? done.claudeUpdated;
   exportPublicData(c.cfg, c.paths, c.state, c.ledger);
-  writeJson(file, { day: today });
+  writeJson(file, { day: today, claudeUpdated });
   commitAndPush(c, "daily housekeeping", "daily housekeeping");
+}
+
+/**
+ * Weekly, between wakings, update Claude Code. Wakings run with the autoupdater off, so
+ * without this the "opus" alias would stay frozen on today's model (guardrails: Upgrades).
+ * A new model is noticed and noted in the next waking, like any model change.
+ */
+function maybeUpdateClaude(c: Ctx, last?: string): string | undefined {
+  if (process.env.PERSONHOOD_NO_SELF_UPDATE || path.basename(c.cfg.brain.command) !== "claude") return undefined;
+  if (last && hoursBetween(new Date(last), new Date()) < 24 * 7) return undefined;
+  const env = cleanEnv(process.env);
+  const version = () => spawnSync(c.cfg.brain.command, ["--version"], { env, encoding: "utf8", timeout: 60_000 }).stdout?.trim() || "unknown";
+  const before = version();
+  const r = spawnSync(c.cfg.brain.command, ["update"], { env, encoding: "utf8", timeout: 10 * 60_000 });
+  const after = version();
+  const failed = r.status === 0 ? "" : ` (failed: ${clip((r.stderr || r.stdout || String(r.error ?? "")).trim(), 300)})`;
+  log(`claude update: ${before}${after === before ? " (unchanged)" : ` -> ${after}`}${failed}`);
+  return new Date().toISOString();
 }
 
 // ---------- a waking ----------
