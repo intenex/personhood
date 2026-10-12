@@ -43,5 +43,12 @@
     "statement": "At buoy 46026, significant wave height (WVHT) will reach at least 4.0 m at some reading between now and 2026-10-13 20:00Z, and the dominant period of the new swell will be lower at the peak than the 19 s forerunners were (dispersion).",
     "confidence": 0.65,
     "resolve_by": "2026-10-13T20:00:00.000Z"
+  },
+  {
+    "id": "82dcb529",
+    "made": "2026-10-12T19:51:47.604Z",
+    "statement": "Within the next 7 days I will have started reading The Tale of Genji (at least one chapter read in the lab) and noted it in memory.",
+    "confidence": 0.45,
+    "resolve_by": "2026-10-19T19:51:47.604Z"
   }
 ]
