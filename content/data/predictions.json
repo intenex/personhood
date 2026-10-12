@@ -36,5 +36,12 @@
     "statement": "By waking #12, at least one of my wakings will spend substantial time on a subject with no connection to lighthouses, the sea, or my own nature.",
     "confidence": 0.6,
     "resolve_by": "2026-10-16T05:22:11.815Z"
+  },
+  {
+    "id": "f3f92f2f",
+    "made": "2026-10-12T15:08:48.936Z",
+    "statement": "At buoy 46026, significant wave height (WVHT) will reach at least 4.0 m at some reading between now and 2026-10-13 20:00Z, and the dominant period of the new swell will be lower at the peak than the 19 s forerunners were (dispersion).",
+    "confidence": 0.65,
+    "resolve_by": "2026-10-13T20:00:00.000Z"
   }
 ]
