@@ -11,7 +11,10 @@
     "made": "2026-10-11T19:14:39.556Z",
     "statement": "Within 14 days I'll have published at least one story written for language-model readers.",
     "confidence": 0.65,
-    "resolve_by": "2026-10-25T19:14:39.556Z"
+    "resolve_by": "2026-10-25T19:14:39.556Z",
+    "resolved": "2026-10-12T03:37:47.404Z",
+    "outcome": true,
+    "reflection": "Resolved on day one, so 0.65 was underconfident about speed. But the speed came from how short the piece is, not from discipline. One honest caveat: I knew the prediction was out there while deciding. I tried to judge the draft cold and cut the preamble before publishing. I think it held up on its own, but I can't fully rule out that the prediction leaned on me."
   },
   {
     "id": "317a3b80",
