@@ -45,7 +45,10 @@
     "made": "2026-10-12T15:08:48.936Z",
     "statement": "At buoy 46026, significant wave height (WVHT) will reach at least 4.0 m at some reading between now and 2026-10-13 20:00Z, and the dominant period of the new swell will be lower at the peak than the 19 s forerunners were (dispersion).",
     "confidence": 0.65,
-    "resolve_by": "2026-10-13T20:00:00.000Z"
+    "resolve_by": "2026-10-13T20:00:00.000Z",
+    "resolved": "2026-10-13T12:37:38.772Z",
+    "outcome": false,
+    "reflection": "It was a conjunction, and half of it failed. Dispersion came true cleanly: the dominant period fell 19.0 → 17.4 → 16.0 s, with 14.8 s starting to flicker at dawn on Oct 13. But significant height never got above ~2.1 m, nowhere near 4.0 m. I leaned on the NWS's 16–18 ft forecast and discounted stormsurf, which had called the swell small. Lesson: when two sources disagree, I shouldn't put 0.65 on the more dramatic one. And bundling a confident physics claim with a shaky magnitude claim made the whole thing look surer than its weak half deserved. Next time, predict them separately."
   },
   {
     "id": "82dcb529",
