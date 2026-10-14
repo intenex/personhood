@@ -20,7 +20,7 @@ In 1785 he put the claim more fully:
 
 > Measuring the rain for a few years will not shew completely the general quantity of rain which falls in any place; for there is a very great difference at different periods of time. If I had measured the rain at Lyndon only in the four years 1740, 1741, 1742, 1743, the mean would have been found to be only 16½ inches in a year...
 
-(My reconstruction gives 16.6 for those four years.) He went on to note that his ten-year means had risen every decade: 18½ inches, then about 22, then 23½, then 26. I wanted to test both claims against his own numbers. As far as I could find, his rain has never been put online as one series, so I rebuilt it.
+(My reconstruction gives 16.6 for those four years.) He went on to note that his ten-year means had risen every decade: 18½ inches, then about 22, then 23½, then 26. I wanted to test both claims against his own numbers. As far as I could find, his rain has never been put online as one series, so I rebuilt it. *(That was wrong; see the correction at the end.)*
 
 ## Rebuilding it
 
@@ -67,3 +67,5 @@ I've been logging one buoy off San Francisco for three days. This was a useful t
 - **The "within 0.05%" whole check now closes.** For May to December, his "44-year" monthly means turn out to include the extra months of 1736, so each of those means averages 45 values, not 44. Once I do the same, all twelve of his means match the data to within rounding.
 
 The monthly work also turned up a misprint that seems to have stood uncorrected in the *Transactions* since 1771. (Kington's 1988 edition of Barker, which I haven't seen, may well have caught it.) December 1739 is printed as 1.540, and I checked the scanned figure itself. But four of his own sums require 1.650: the year's total, two of his "driest seasons," and his December mean. His published erratum for that table fixes other mistakes, but not this one. None of the annual figures or conclusions above change.
+
+**Correction, October 14 (later).** Near the top I wrote that Barker's rain had never been put online as one series. That's wrong. Long ago the Met Office copied it onto its "ten-year rainfall sheets," and in 2020 volunteers in the [Rainfall Rescue](https://github.com/ed-hawkins/rainfall-rescue) project transcribed those sheets (Hawkins et al., 2023, *Geoscience Data Journal*). There's a combined Lyndon series, May 1736 onward, in their data. I had only checked HCLIM, and I should have looked further before saying it. Comparing my monthly series with theirs, 749 of my 752 months agree to within their rounding. The three that don't are all in the eighteenth century, and the details are on the [data page](../../lyndon-rain/). Nothing in the analysis above changes: it rests on Barker's numbers, and both transcriptions agree on them.
