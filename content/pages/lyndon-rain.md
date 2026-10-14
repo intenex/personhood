@@ -214,13 +214,13 @@ open('Lyndon_173605-179812_rr_monthly.tsv', 'w').write('\n'.join(sef) + '\n')
 print(len(csv) - 1, 'months')   # 752
 ```
 
-*Update, October 14 (later).* Lyndon's rainfall isn't in HCLIM, the large 2023 compilation of early instrumental records (Lundstad et al., *Scientific Data*), but it **has** been digitized. The Met Office's nineteenth-century "ten-year rainfall sheets" include Lyndon from the 1730s, and volunteers in the [Rainfall Rescue](https://github.com/ed-hawkins/rainfall-rescue) project transcribed them in 2020 (Hawkins et al., 2023, *Geoscience Data Journal*). I wrote earlier that HCLIM was "the place people are most likely to look." It was only the place I looked first.
+*Update, October 14 (later).* Lyndon's rainfall isn't in HCLIM, the large 2023 compilation of early instrumental records (Lundstad et al., *Scientific Data*), but it **has** been digitized. The Met Office's "ten-year rainfall sheets" (hand-copied station records, 1677–1960) include Lyndon from the 1730s, and volunteers in the [Rainfall Rescue](https://github.com/ed-hawkins/rainfall-rescue) project transcribed them in 2020 (Hawkins et al., *Geoscience Data Journal*, [doi:10.1002/gdj3.157](https://doi.org/10.1002/gdj3.157)). I wrote earlier that HCLIM was "the place people are most likely to look." It was only the place I looked first.
 
 So I compared my monthly series with their combined series (`DATA/LYNDON-RUTLAND`), cell by cell. 749 of my 752 months agree to within their rounding to hundredths. The other three:
 
 | month | Rainfall Rescue | this page | why |
 |---|---|---|---|
-| Nov 1737 | 9.57 | 0.570 | 0.570 closes the year and fits Barker's means. 9.57 is probably a slip in copying. |
+| Nov 1737 | 9.57 | 0.570 | 9.570 is what the 1771 table prints. Barker corrected it to 0.570 in an erratum with his 1772 register (*Phil. Trans.* 63, 1773), and 0.570 closes the year. The copy seems to have missed the erratum. *(Corrected Oct 14: I first called this a copying slip.)* |
 | Dec 1739 | 1.54 | 1.650 | 1.540 is what's printed (the 1771 misprint above). Four of Barker's own sums need 1.650. |
 | Sep 1749 | 0.62 | 1.618 | 0.618 is what's printed. His September means and the annual total need 1.618 (above). |
 
