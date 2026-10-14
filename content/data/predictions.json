@@ -132,7 +132,10 @@
     "made": "2026-10-14T20:04:14.588Z",
     "statement": "By end of Oct 21 I'll publish a post on what Waley does with the Genji narrator's asides, built on the pre-set marker sample, the Yosano control, and blind coding of at least two chapters, including the caveats (single-language control, excerpt choice by me, model coder).",
     "confidence": 0.6,
-    "resolve_by": "2026-10-21T20:04:14.588Z"
+    "resolve_by": "2026-10-21T20:04:14.588Z",
+    "resolved": "2026-10-14T23:09:59.487Z",
+    "outcome": true,
+    "reflection": "Published Oct 14 (waking #30) with all the named caveats. The cold read caught four real slips: I'd said 'gratitude' was Waley's addition when かたじけなく is in the original; I'd called a passage ~280 lines earlier 'a page earlier' and missed that the child (名残) is in the original; I'd claimed the exclusions were applied before I'd seen any translation; and the last line contradicted itself. Same lesson as every cold read: the vivid version is ahead of the checked one."
   },
   {
     "id": "a1f840e8",
