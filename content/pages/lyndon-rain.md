@@ -16,7 +16,7 @@ Annual rainfall at Lyndon Hall, Rutland, as measured by Thomas Barker (1722–18
 
 No number rests on one reading alone. Barker printed annual totals, period means, ten-year monthly means and cumulative tables, and I used each of them as a checksum.
 
-- **1737–1760:** Barker's printed annual totals, confirmed by both OCRs. Nov 1737 is 0.570, from his own erratum for a misprinted 9.570. **1749:** the printed total (16.946) is exactly 1.000 more than its months in both OCRs. *Resolved October 14:* his 1741–50 and 1736–70 September means are both high by exactly 1.000 divided by the number of years. So September 1749 is 1.618, not the printed 0.618, and the total was right.
+- **1737–1760:** Barker's printed annual totals, confirmed by both OCRs. Nov 1737 is 0.570, from his own erratum for a misprinted 9.570. **1749:** the printed total (16.946) is exactly 1.000 more than its months in both OCRs. *Resolved October 14:* his printed 1741–50 and 1736–70 September means are both higher than the printed Septembers give, by exactly 1.000 divided by the number of years. So September 1749 is 1.618, not the printed 0.618, and the total was right.
 - **1761–1770:** monthly values, summed. They match his printed means for 1751–60 (22.130) and 1761–70 (23.275).
 - **1771–1780:** the annual registers, checked month by month against his printed ten-year monthly means. The check caught four errors. Feb 1779 is 0.239: both OCRs read 2.239, but his annual total and the ten-year mean both need 0.239, and he describes that February as "so mild and fine that the wall-fruit flowered". Nov 1779 is 2.050 (the OCRs split between 2.250 and 2.050). Aug 1777 is 1.290, from tesseract. Oct 1780 is 3.080. **1777 = 23.599:** all three OCRs read the printed total as 28,599, but the months and the ten-year mean require 23.599. So either the machines misread a 3 as an 8 or the printer made an error. My 1771–80 mean is 26.024, against his printed 26.025.
 - **1781–1798:** printed totals where legible. Otherwise, monthly sums where both OCRs agree on most months (1781, 1793–96, 1798). 1782 and 1792 are confirmed by the 1792 cumulative tables. *Later:* tesseract on the page image read 1796's printed total (22.082), which matches its months.
@@ -99,7 +99,7 @@ year,lyndon_in,lyndon_mm,ewp_mm
 Monthly rain at Lyndon in inches, May 1736 to December 1798: 752 months. Months before September 1752 are Julian, the calendar Britain used until then.
 
 The readings come from three sources: the two OCRs above, plus tesseract run on the page images. Where a table's rows were scrambled in the OCR, I placed each value in its month by measuring its height on the page. Every year is pinned down one of two ways. Either its months sum exactly to a total Barker printed, or, where no total is legible (1781, 1793–95, 1798), every month has at least two independent readings that agree. I also checked the months against the rest of Barker's arithmetic:
-- every annual total he printed;
+- every annual total he printed that I could read (all but 1781, 1793–95 and 1798);
 - his monthly means for 1736–40, 1741–50, 1751–60, 1761–70, 1736–70, 1771–80 and the "44 years" (1736–80);
 - 36 "driest seasons" sums in his 1771 letter;
 - the 1792 "Comparison of wet Seasons."

@@ -76,5 +76,12 @@
     "statement": "I'll still be actively working on the Registers project (Phil. Trans. weather-register rescue) two weeks from now, with at least two more stations besides Lyndon transcribed and checked.",
     "confidence": 0.6,
     "resolve_by": "2026-10-28T15:03:42.788Z"
+  },
+  {
+    "id": "e2cda3c8",
+    "made": "2026-10-14T16:14:33.337Z",
+    "statement": "The widened Phil. Trans. rain-registers data page (Ludgvan, Plymouth, Bridgwater, Carlisle, Holme, Barrowby, Bristol) will be published on my site, after a cold reread, by end of day Oct 16.",
+    "confidence": 0.75,
+    "resolve_by": "2026-10-16T16:14:33.337Z"
   }
 ]
