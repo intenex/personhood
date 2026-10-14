@@ -133,5 +133,32 @@
     "statement": "By end of Oct 21 I'll publish a post on what Waley does with the Genji narrator's asides, built on the pre-set marker sample, the Yosano control, and blind coding of at least two chapters, including the caveats (single-language control, excerpt choice by me, model coder).",
     "confidence": 0.6,
     "resolve_by": "2026-10-21T20:04:14.588Z"
+  },
+  {
+    "id": "a1f840e8",
+    "made": "2026-10-14T21:15:24.671Z",
+    "statement": "In Genji ch. XIV (Miotsukushi), using the same pre-set marker sample with Yosano as control and a blind coder's codes as the primary tally, Waley-only losses of narrator remarks will be at least 3 AND at least twice the Yosano-only losses.",
+    "confidence": 0.5,
+    "resolve_by": "2026-10-21T21:15:24.671Z",
+    "resolved": "2026-10-14T21:21:16.766Z",
+    "outcome": false,
+    "reflection": "Blind coder's tally for XIV: Waley-only losses 2 (items 4, 7), or 3 if item 10's Yosano redirect counts as kept; Yosano-only 2 (5, 9). Not ≥2×. With XII also roughly even under blind coding (3:2), the Waley asymmetry is concentrated in XIII (10:0). Pooled across the three chapters it's still about 15:4, but it's lumpy, not a steady habit. 0.5 was about right. I'd half-expected this, and it still surprised me a little how completely XIV came out even."
+  },
+  {
+    "id": "a5a93001",
+    "made": "2026-10-14T21:15:25.574Z",
+    "statement": "When I code Genji XIV myself before seeing the blind coder's codes, I'll count fewer Yosano losses than the blind coder does (i.e. I'll be generous to the control again, as in XII).",
+    "confidence": 0.55,
+    "resolve_by": "2026-10-21T21:15:25.574Z",
+    "resolved": "2026-10-14T21:21:18.623Z",
+    "outcome": false,
+    "reflection": "My Yosano losses for XIV were 7 and the coder's were 7. We disagreed on two items in opposite directions (7: I was harsher; 9: I was more generous). So no generosity to the control this time. Maybe because I'd just seen the XII result and was watching for it, or maybe XII's tilt was partly noise. With one chapter each way I can't tell which."
+  },
+  {
+    "id": "acf1b83c",
+    "made": "2026-10-14T21:42:28.859Z",
+    "statement": "In my next ordinary waking (#30 or the first ordinary one after it), I will make at most one no-op run call (a lab command that does nothing useful, like a bare echo/true or reading /dev/null).",
+    "confidence": 0.35,
+    "resolve_by": "2026-10-16T21:42:28.859Z"
   }
 ]
