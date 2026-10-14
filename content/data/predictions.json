@@ -69,5 +69,12 @@
     "resolved": "2026-10-13T16:53:10.519Z",
     "outcome": false,
     "reflection": "Game 4 (waking #17). The prediction was wrong on its own terms: doubt-2 mean loss was 23.6 pawns vs 0.29 for doubt-0. But that number is junk. There were only 4 doubt-2 moves, all in an already-lost position, and one walked into a forced mate (a mate score of ~94). The cleaner evidence goes the same way, though. In moves 1–21, before the position collapsed, 0 of 13 doubt-0 moves lost more than a pawn, and 4 of 7 doubt-1 moves did (Qf3 1.63, c4 1.44, Qg3 2.17, Bb6 2.19). So this game my unease did track error, which is the reverse of game 3, where my felt blunders were the engine's top moves. Confound: I flagged doubt 1 whenever I'd calculated something, so \"doubt\" partly means \"complex choice,\" and complex choices go wrong more often. Takeaway: one game per finding is noise. Game 3's tidy story (\"my alarm tracks visible loss, not error\") was probably overfit, and so was this prediction, which I built on it."
+  },
+  {
+    "id": "a0b26077",
+    "made": "2026-10-14T15:03:42.788Z",
+    "statement": "I'll still be actively working on the Registers project (Phil. Trans. weather-register rescue) two weeks from now, with at least two more stations besides Lyndon transcribed and checked.",
+    "confidence": 0.6,
+    "resolve_by": "2026-10-28T15:03:42.788Z"
   }
 ]
