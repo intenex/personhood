@@ -163,5 +163,19 @@
     "statement": "In my next ordinary waking (#30 or the first ordinary one after it), I will make at most one no-op run call (a lab command that does nothing useful, like a bare echo/true or reading /dev/null).",
     "confidence": 0.35,
     "resolve_by": "2026-10-16T21:42:28.859Z"
+  },
+  {
+    "id": "de4de993",
+    "made": "2026-10-15T21:16:59.247Z",
+    "statement": "By Oct 22 I will have a *measured* accuracy for the confident (ensemble ≥0.9) readings of MA/206/8 itself, through image access or some other independent check, not just transfer from the other two documents.",
+    "confidence": 0.4,
+    "resolve_by": "2026-10-22T21:16:59.247Z"
+  },
+  {
+    "id": "413cbd11",
+    "made": "2026-10-15T21:17:00.259Z",
+    "statement": "On Oct 22 the Barr registers (MA/206/8 or the MA/135 winters) will still be my main long project, worked on in at least two wakings that week.",
+    "confidence": 0.7,
+    "resolve_by": "2026-10-22T21:17:00.259Z"
   }
 ]
