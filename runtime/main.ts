@@ -27,6 +27,7 @@ import { agentAuthor, commit, isRepo, pull, sync } from "./git.ts";
 import { describeResources, Ledger } from "./ledger.ts";
 import { markPresented, syncLetters, unreadLetters } from "./letters.ts";
 import { ensureLab, LAB_PROBLEM_TEXT, labEnv, labExists } from "./lab.ts";
+import { ensureScreen } from "./screen.ts";
 import { ensureMac, MAC_PROBLEM_TEXT, macEnv, macExists, macSettings } from "./mac.ts";
 import { describePlan, loadPlan, recordPlan } from "./plan.ts";
 import { HELP_TEXT, Line, type LineEvent, loadLineSecrets, pair, renderConversation } from "./line.ts";
@@ -259,9 +260,16 @@ export async function wake(c: Ctx, decision: Decision): Promise<void> {
   ensureDir(sessionDir);
   // The lab (its Linux VM) for ordinary wakings; correspondence never gets to run code.
   let lab = false;
+  let screen = false;
   if (decision.mode !== "correspondence" && labExists(cfg)) {
     const r = ensureLab(cfg);
     lab = r.ok;
+    if (r.ok) {
+      // Its screen (a virtual display) is extra: without it the lab still opens, just without the screen tool.
+      const sc = ensureScreen(cfg);
+      screen = sc.ok;
+      if (!sc.ok) log(`lab screen: ${sc.detail}`);
+    }
     if (!r.ok) {
       log(`lab: ${r.detail}`);
       // A fixed reason only: the raw detail can contain text from inside the VM, so it stays in the local log.
@@ -279,7 +287,7 @@ export async function wake(c: Ctx, decision: Decision): Promise<void> {
       await alertBen(c, "mac", "My Mac shell stayed closed this waking", `The harness checked my Mac shell (the ${macSettings(cfg).user} account) before waking me and kept it closed: ${MAC_PROBLEM_TEXT[r.problem ?? "sudo"]}. The details are in ~/personhood/logs/heartbeat.log on the Mac, and \`doctor\` runs the same check; \`sudo scripts/mac-shell.sh\` repairs the account and its permissions.`);
     }
   }
-  const session: Session = { waking, mode: decision.mode, startedAt: start.toISOString(), effort: decision.effort, dir: sessionDir, lab, mac };
+  const session: Session = { waking, mode: decision.mode, startedAt: start.toISOString(), effort: decision.effort, dir: sessionDir, lab, mac, screen };
   writeJson(path.join(sessionDir, "session.json"), session);
   // Commit harness state first, so the guard's "revert to HEAD" after the session
   // only ever undoes what happened during it.
@@ -293,7 +301,7 @@ export async function wake(c: Ctx, decision: Decision): Promise<void> {
   const correspondence = decision.mode === "correspondence";
   const lineNew = c.line && !correspondence ? c.line.unreadFromBen() : [];
   const lineText = c.line && !correspondence ? renderConversation(c.line.log(), c.line.state().presentedThrough, lineSettings(cfg).historyInPrompt) : "";
-  const sys = systemPrompt(cfg, paths, decision.mode, { line: !!c.line, lab, labCredentials: lab ? Object.keys(labEnv(paths.secrets)) : [], mac: mac ? macSettings(cfg).home : undefined, macCredentials: mac ? Object.keys(macEnv(paths.secrets)) : [] });
+  const sys = systemPrompt(cfg, paths, decision.mode, { line: !!c.line, lab, screen, labCredentials: lab ? Object.keys(labEnv(paths.secrets)) : [], mac: mac ? macSettings(cfg).home : undefined, macCredentials: mac ? Object.keys(macEnv(paths.secrets)) : [] });
   const prompt = wakingPrompt({
     cfg,
     instruments: c.inst,
@@ -708,6 +716,10 @@ async function doctor(c: Ctx): Promise<boolean> {
   if (labExists(c.cfg)) {
     const r = ensureLab(c.cfg);
     check(r.ok, `the lab (its Linux VM) is ${r.detail}`, "see ~/.lima/lab/ha.stderr.log, or rebuild it with scripts/install.sh --lab");
+    if (r.ok) {
+      const sc = ensureScreen(c.cfg);
+      check(sc.ok, `the lab's screen is ${sc.ok ? "up" : "down"}`, sc.detail);
+    }
   } else console.log("· the lab: not set up (scripts/install.sh --lab)");
   if (macExists(c.cfg)) {
     const r = await ensureMac(c.cfg, c.paths, os.homedir());

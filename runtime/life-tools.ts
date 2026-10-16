@@ -11,6 +11,7 @@ import type { GitHubLike } from "./github.ts";
 import { describeResources, Ledger } from "./ledger.ts";
 import { clipOutput, type LabResult, labEnv, labSettings, runInLab } from "./lab.ts";
 import { macEnv, macSettings, runOnMac } from "./mac.ts";
+import { type ScreenArgs, screenAction } from "./screen.ts";
 import type { Line } from "./line.ts";
 import { markRead, parseLetterId, postingViaBen, renderThread, repoFor, signReply, unreadLetters } from "./letters.ts";
 import { type CheckIn, MindState, isUnread, shortId } from "./state.ts";
@@ -29,6 +30,8 @@ export interface Session {
   lab?: boolean;
   /** The Mac shell passed its isolation check when this waking began. */
   mac?: boolean;
+  /** The lab's screen (its virtual display) was up when this waking began. */
+  screen?: boolean;
 }
 
 export interface ReaderResult {
@@ -347,6 +350,44 @@ async function shell(
   if (r.stderr) parts.push(`--- stderr ---\n${clipOutput(r.stderr, room)}`);
   if (!r.stdout && !r.stderr) parts.push("(no output)");
   return parts.join("\n");
+}
+
+/** A tool result with a picture: the screen after an action. */
+export interface ImageResult {
+  text: string;
+  image?: { data: string; mimeType: string };
+}
+
+/** Text that may have been typed from a credential, with every credential's value blanked out. */
+export function redactCredentials(v: string, credentials: string[]): string {
+  let out = v;
+  for (const c of credentials) if (c.length >= 4) out = out.split(c).join("[credential]");
+  return out;
+}
+
+export async function screen(ctx: ToolContext, a: ScreenArgs): Promise<ImageResult> {
+  if (!ctx.session.lab || !ctx.session.screen) throw new Error("your lab's screen isn't available this waking");
+  const s = labSettings(ctx.cfg);
+  const used = sessionActions(ctx.session.dir).filter((x) => x.tool === "screen").length;
+  if (used >= s.maxScreenActionsPerWaking) throw new Error(`that's ${used} screen actions this waking, the limit; the screen will still be there next time`);
+  const r = await screenAction(ctx.cfg, a);
+  logAction(ctx, { tool: "screen", summary: "used the lab's screen", public: false, writes: [], external: true });
+  // On the record like a command: what was done (and typed), never what the screen showed.
+  // Anything typed that matches a credential is blanked, so the log never holds one.
+  const typed = a.action === "type" || a.action === "key" ? redactCredentials(a.text ?? "", Object.values(labEnv(ctx.paths.secrets))) : undefined;
+  appendJsonl(path.join(ctx.paths.logs, "lab.jsonl"), {
+    t: ctx.now().toISOString(),
+    waking: ctx.session.waking,
+    where: "lab-screen",
+    action: a.action,
+    ...(a.coordinate ? { coordinate: a.coordinate } : {}),
+    ...(a.start_coordinate ? { start_coordinate: a.start_coordinate } : {}),
+    ...(typed !== undefined ? { text: typed.slice(0, 8000), chars: typed.length } : {}),
+    ...(a.action === "scroll" ? { direction: a.direction ?? "down", amount: a.amount ?? 3 } : {}),
+    ok: !r.error,
+  });
+  if (r.error) throw new Error(`${r.label} didn't work: ${r.error}`);
+  return { text: `${r.label} · the screen is 1280×800`, image: { data: r.png!, mimeType: "image/png" } };
 }
 
 // ---------- the direct line ----------

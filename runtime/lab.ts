@@ -24,6 +24,7 @@ export interface LabSettings {
   defaultTimeoutSeconds: number;
   maxTimeoutSeconds: number;
   outputChars: number;
+  maxScreenActionsPerWaking: number;
 }
 
 export function labSettings(cfg: LifeConfig): LabSettings {
@@ -37,6 +38,7 @@ export function labSettings(cfg: LifeConfig): LabSettings {
     defaultTimeoutSeconds: 120,
     maxTimeoutSeconds: 900,
     outputChars: 16000,
+    maxScreenActionsPerWaking: 600,
     ...cfg.lab,
   };
 }

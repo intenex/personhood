@@ -211,6 +211,9 @@ if [ "$(cfg_lab enabled false)" = "true" ]; then
     fi
     limactl start --tty=false "$LAB" >/dev/null 2>&1 || limactl start --tty=false "$LAB"
     echo "The lab is running."
+    say "Giving the lab a screen: a virtual display with a window manager and Chromium (a few minutes the first time)"
+    ssh -F "${LIMA_HOME:-$HOME/.lima}/$LAB/ssh.config" -o BatchMode=yes "lima-$LAB" 'sudo -n bash -s' < "$HOME_DIR/body/scripts/lab-screen-setup.sh" \
+      || echo "(the lab's screen didn't set up; re-run scripts/install.sh to try again)"
   else
     echo "To give the agent a lab for running code, install Lima (https://lima-vm.io) and re-run this script."
   fi

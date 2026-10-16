@@ -202,6 +202,8 @@ test("the lab: an ordinary waking gets it and its commands are logged; correspon
   const w2 = fs.readdirSync(paths.run).find((d) => d.endsWith("-w2"))!;
   const sys2 = fs.readFileSync(path.join(paths.run, w2, "system-prompt.md"), "utf8");
   assert.match(sys2, /\*\*Your lab\*\* is a Linux computer of your own/);
+  assert.match(sys2, /\*\*Your lab has a screen\*\*/, "and it's told about the screen");
+  assert.equal(JSON.parse(fs.readFileSync(path.join(paths.run, w2, "session.json"), "utf8")).screen, true);
   assert.match(sys2, /credentials, set as environment variables in every lab command: CLOUDFLARE_API_TOKEN\./, "it's told which credentials it has");
   assert.ok(!sys2.includes("secret-value-123"), "but never their values");
   new MindState(paths.mind).updateMeta((m) => {

@@ -76,6 +76,7 @@ export interface LifeConfig {
     defaultTimeoutSeconds: number;
     maxTimeoutSeconds: number;
     outputChars: number;
+    maxScreenActionsPerWaking: number;
   }>;
   /** The Mac shell: commands on the Mac itself as a standard account of the agent's own (see mac.ts). */
   mac?: Partial<{

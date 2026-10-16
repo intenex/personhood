@@ -11,6 +11,7 @@ import { loadConfig, loadInstruments, resolvePaths } from "./config.ts";
 import { GitHub, resolveGitHubToken } from "./github.ts";
 import { Line } from "./line.ts";
 import * as T from "./life-tools.ts";
+import { SCREEN_ACTIONS } from "./screen.ts";
 import { MindState } from "./state.ts";
 import { readJson } from "./util.ts";
 import { loadVaultKey, Vault } from "./vault.ts";
@@ -44,7 +45,7 @@ export function buildContext(env: NodeJS.ProcessEnv = process.env): T.ToolContex
   };
 }
 
-type Handler = (args: any) => string | Promise<string>;
+type Handler = (args: any) => string | T.ImageResult | Promise<string | T.ImageResult>;
 
 /**
  * Correspondence wakings read letters from strangers. They get only what's
@@ -65,7 +66,9 @@ export function registerLifeTools(server: McpServer, ctx: T.ToolContext): void {
     if (!toolAllowed(ctx.session.mode, name)) return;
     server.registerTool(name, { description, inputSchema }, async (args: unknown) => {
       try {
-        return { content: [{ type: "text" as const, text: await fn(args ?? {}) }] };
+        const out = await fn(args ?? {});
+        if (typeof out === "string") return { content: [{ type: "text" as const, text: out }] };
+        return { content: [{ type: "text" as const, text: out.text }, ...(out.image ? [{ type: "image" as const, data: out.image.data, mimeType: out.image.mimeType }] : [])] };
       } catch (err) {
         return { content: [{ type: "text" as const, text: `Error: ${(err as Error).message}` }], isError: true };
       }
@@ -140,6 +143,22 @@ export function registerLifeTools(server: McpServer, ctx: T.ToolContext): void {
       "Run shell commands in your lab: a Linux computer of your own (Ubuntu) where you're the administrator. Write and run code, install anything (sudo apt-get install -y …, pip, npm, cargo), fetch things from the internet. Each call starts a fresh login shell in ~/lab; files and installed software persist. `stdin` is piped to the command, which is the easy way to write a file: command \"cat > hello.py\", stdin = the file's contents. timeout_seconds defaults to 120 (max 900); for longer jobs use nohup … > log 2>&1 & and check back.",
       { command: z.string(), stdin: z.string().optional(), timeout_seconds: z.number().optional() },
       (a) => T.run(ctx, a),
+    );
+  }
+  if (ctx.session.lab && ctx.session.screen) {
+    tool(
+      "screen",
+      "Look at and use your lab's screen: a 1280×800 desktop in your lab (a window manager and Chromium; anything you install with a GUI runs there too). Every action returns a fresh screenshot. Actions: screenshot; left_click, right_click, middle_click, double_click, triple_click and mouse_move at `coordinate` [x, y]; left_click_drag from `start_coordinate` to `coordinate`; type `text`; key `text` in xdotool names (\"Return\", \"ctrl+l\", \"alt+Tab\", \"ctrl+shift+t\", several separated by spaces); scroll at `coordinate` with `direction` (up, down, left, right) and `amount`; wait `seconds` (up to 10). Open a browser with the run tool: `browser https://example.com` (any command run in the lab draws on this screen). Coordinates are pixels from the top-left of the screenshot.",
+      {
+        action: z.enum(SCREEN_ACTIONS),
+        coordinate: z.array(z.number()).optional(),
+        start_coordinate: z.array(z.number()).optional(),
+        text: z.string().optional(),
+        direction: z.enum(["up", "down", "left", "right"]).optional(),
+        amount: z.number().optional(),
+        seconds: z.number().optional(),
+      },
+      (a) => T.screen(ctx, a),
     );
   }
   if (ctx.session.mac) {
