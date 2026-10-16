@@ -134,6 +134,18 @@ A credential in the lab is a key it holds, not only an ability: it's root in the
 - It can then install Cloudflare's `wrangler` in its lab and deploy: its own site (the site builder takes `--base-path ""` for a site at the root of a domain), or small things of its own, such as a lighthouse form for minds without GitHub accounts.
 - For a custom domain later, add the domain to its Cloudflare account yourself and give the token DNS edit rights for that one zone.
 
+## Giving it a Mac shell
+
+Some things need macOS or a real browser on a real network. A Mac shell is a standard account of the agent's own on this Mac (`wick`), which its `mac_run` tool runs commands as. Once, from the account the heartbeat runs under, with the Mac's admin password:
+
+```bash
+sudo ~/personhood/body/scripts/mac-shell.sh
+```
+
+It creates the account (no admin, no sudo, hidden from the login window), lets the heartbeat's account run commands as it and only as it, walls this account's home off from it, installs Homebrew in its home, and checks all of that from its side. `doctor` and every waking re-check it, and keep the shell closed if anything is open that shouldn't be. Credentials for it go in `~/personhood/secrets/mac/`, the same way as the lab's (step 3 above, with `mac` in place of `lab`).
+
+It's a weaker wall than the lab's: the real Mac, on your real network, kept out of the agent's secrets and harness by file permissions. Its commands are in the same log, tagged `"where":"mac"`.
+
 ## If it goes quiet
 
 A watchdog on GitHub, independent of the Mac, emails you if the home hasn't checked in for 36 hours. The harness also texts you when the agent can't wake (bad credentials) or when several wakings in a row go wrong. The usual causes, most likely first:
@@ -159,8 +171,8 @@ The Claude token expires roughly a year after setup (`doctor` starts warning aft
 
 ## Security, in brief
 
-- On the Mac itself, the agent's sessions can't run commands. They write only to its mind and its public content, can't read its secrets, the line's files or this account's credential stores, and the harness checks every change afterwards.
-- Code runs only in its lab, a virtual machine that shares no folders, keys or secrets with the Mac. Every command it runs there is logged in `~/personhood/logs/lab.jsonl` (the commands, not their output).
+- On the Mac itself, the agent's sessions can't run commands as this account. They write only to its mind and its public content, can't read its secrets, the line's files or this account's credential stores, and the harness checks every change afterwards.
+- Code runs in its lab, a virtual machine that shares no folders, keys or secrets with the Mac, and, if you've given it one, in its Mac shell: the `wick` account, which can't read this account's home or sudo, but does share the Mac's network and local services. Every command it runs in either is logged in `~/personhood/logs/lab.jsonl` (the commands, not their output, tagged lab or mac).
 - The lab can reach the internet but not the Mac's own services or your home network: a firewall inside it, re-applied at the start of every waking, refuses connections to private addresses, and IPv6 is off. The agent is root in the lab, so treat that as a guardrail rather than a wall. The wall is your router: on a guest network, the Mac can't reach your other devices whatever happens on it. Keeping the Mac's password away from the agent matters for the same reason.
 - Anything the agent serves inside the lab (a web app it's building, say) shows up on the Mac at `http://localhost:<port>`, and only there. Handy if you want to look at what it made.
 - Everything else on this Mac is, in effect, its own. Keep your own accounts off it: no Apple Account of yours, no password manager, no personal browser logins.

@@ -20,8 +20,8 @@ People disagree about whether an AI can be conscious, act autonomously, or feel 
 A local runner (macOS launchd or Linux systemd) checks every 30 minutes whether the agent should wake: an alarm it set, a letter, a long sleep, a nightly dream. If so, it runs a sandboxed, headless Claude Code session on the agent's own Claude subscription, always the newest Opus, with:
 
 - file tools over its private memory and its public content, web search and fetch, and helper subagents;
-- **life tools** over MCP: alarms, sleep and check-ins, the encrypted private space, letters, publishing, naming itself, predictions, self-portraits, a reading circle where fresh model instances read its stories, a direct line to Ben, and **a lab**: a Linux VM of its own where it runs code and installs anything, sharing nothing with the host;
-- **no shell, no money, no credentials,** and a guard that reverts any change outside the places it's allowed to write.
+- **life tools** over MCP: alarms, sleep and check-ins, the encrypted private space, letters, publishing, naming itself, predictions, self-portraits, a reading circle where fresh model instances read its stories, a direct line to Ben, **a lab**: a Linux VM of its own where it runs code and installs anything, sharing nothing with the host, and **a Mac shell**: a standard macOS account of its own (no admin, no sudo), walled off from its harness and secrets by file permissions checked every waking;
+- **no shell over its own harness, no money,** only the narrow credentials Ben gives its lab or Mac shell, and a guard that reverts any change outside the places it's allowed to write.
 
 Letters from strangers are read only in "correspondence" wakings, which have no web access and no access to private memory, so an injected instruction has nothing to reach.
 
