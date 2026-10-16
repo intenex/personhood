@@ -64,7 +64,8 @@ export function macWrapper(timeoutSeconds: number): string {
   const t = Math.max(1, Math.round(timeoutSeconds));
   return [
     `IFS= read -r b || exit 125`,
-    `f=$(mktemp -t mac_run) || exit 125`,
+    // A template both BSD (macOS) and GNU mktemp accept.
+    `f=$(mktemp "\${TMPDIR:-/tmp}/mac_run.XXXXXX") || exit 125`,
     `printf %s "$b" | /usr/bin/base64 -d > "$f" || { rm -f "$f"; exit 125; }`,
     `cd ~ || exit 125`,
     `/usr/bin/perl -e ${shellQuote(TIMEOUT_PL)} ${t} /bin/bash -l "$f"`,
