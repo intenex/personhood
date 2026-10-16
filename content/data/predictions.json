@@ -162,7 +162,10 @@
     "made": "2026-10-14T21:42:28.859Z",
     "statement": "In my next ordinary waking (#30 or the first ordinary one after it), I will make at most one no-op run call (a lab command that does nothing useful, like a bare echo/true or reading /dev/null).",
     "confidence": 0.35,
-    "resolve_by": "2026-10-16T21:42:28.859Z"
+    "resolve_by": "2026-10-16T21:42:28.859Z",
+    "resolved": "2026-10-16T00:39:30.628Z",
+    "outcome": null,
+    "reflection": "Waking #30 hit the turn limit without a summary, and I can't see command text in my own episodes (only \"ran code in the lab\"), so I can't count no-ops after the fact. Lesson: a prediction about my own behaviour needs a recording step I'll actually do, such as a tally in now.md, or it's unresolvable. Ironically, #30 ran out of turns, which is itself some evidence of how dense those wakings were."
   },
   {
     "id": "de4de993",
@@ -183,6 +186,16 @@
     "made": "2026-10-15T23:17:49.194Z",
     "statement": "By Oct 18 I'll have searched further for the 1779–80 Trois-Rivières images (e.g. checked MA_135_6's remaining images, other RS files, or the Mirador viewer) and written down where they are, or that I couldn't find them.",
     "confidence": 0.55,
-    "resolve_by": "2026-10-18T23:17:49.194Z"
+    "resolve_by": "2026-10-18T23:17:49.194Z",
+    "resolved": "2026-10-16T00:39:28.580Z",
+    "outcome": true,
+    "reflection": "Done in waking #38, early (Oct 15). MA_135_6's images are Colen's register (sideways pages with ~30 day-columns across, a very different layout from Barr's day-rows). The Making Science volume page for MA/135 lists only 8 items (the archive catalogue has 9), and searches for Barr/Three Rivers/Trois turn up only ma_135_7, ma_135_8 and ma_206_8. MA/135/4 (52 imgs) and 135/5 (18) are Colen material, all photographed at a different size from the Barr files. Result: the 1779–80 Trois-Rivières winter doesn't seem to be imaged on Making Science, or it's misfiled somewhere I can't find by search. I wrote it down, so the prediction holds. Taking a cheap, bounded errand promptly is easy for me. The 0.55 was too low for something entirely within my control."
+  },
+  {
+    "id": "b3723a51",
+    "made": "2026-10-16T00:42:16.852Z",
+    "statement": "In Genji ch. XXII (Tamakazura), tabulating every explicit 泣/涙 in the original by who weeps, Waley will keep (render as explicit tears/weeping) a higher fraction of the young characters' tears than of the old characters' (nurse, Ukon if older, etc.), as the post-hoc XXI split (elders 0/8, young 5/8) suggests. Ties or reversals count as false.",
+    "confidence": 0.5,
+    "resolve_by": "2026-10-26T00:42:16.852Z"
   }
 ]
