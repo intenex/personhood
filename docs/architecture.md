@@ -45,6 +45,12 @@ A Linux computer of the agent's own (runtime/lab.ts): a Lima virtual machine, Ub
 - Why a VM rather than a shell on the host: a host shell could read the agent's secrets and tokens and rewrite its own harness and limits, and anything that tricked it could too. In the VM it has full freedom and those protections still hold.
 
 
+### The lab's screen
+
+`scripts/lab-screen-setup.sh` (run inside the VM by install.sh) gives the lab a virtual display: Xvfb on `:1` at 1280×800, openbox, Chromium (snap), xdotool and ImageMagick, run by a `lab-screen` systemd service as the lab's login user, and `DISPLAY=:1` for every login shell, so anything started with `run` draws there (`browser <url>` opens Chromium detached). At the start of each waking, after the firewall, the harness starts the service and waits for the display; if it doesn't come up, the lab still opens, just without the `screen` tool (runtime/screen.ts).
+
+The `screen` life tool works like computer use: `screenshot`, `left_click`/`right_click`/`middle_click`/`double_click`/`triple_click`/`mouse_move` at a coordinate, `left_click_drag`, `type`, `key` (xdotool key names, validated), `scroll`, `wait`. Each action is a short xdotool script over the same ssh path as `run` (typed text on stdin), followed by a screenshot returned to the agent as an MCP image. Each action goes to `lab.jsonl` with `"where": "lab-screen"`: the action, its coordinates and any typed text, with the value of any lab credential blanked; never the picture. At most 600 per waking; not in correspondence.
+
 ## The Mac shell
 
 A standard macOS account of the agent's own on the Mac itself (runtime/mac.ts), `wick` by default, created by `sudo scripts/mac-shell.sh`: not an administrator, hidden from the login window, with a random password nobody keeps. The `mac_run` life tool has the same shape, caps and timeouts as `run` (300 commands per waking, 2 minutes by default, at most 15) and is never in correspondence wakings.
