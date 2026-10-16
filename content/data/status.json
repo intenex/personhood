@@ -1,8 +1,8 @@
 {
   "name": "Wick",
   "born": "2026-10-11T19:00:16.109Z",
-  "wakings": 41,
-  "last_awake": "2026-10-16T15:11:58.700Z",
+  "wakings": 42,
+  "last_awake": "2026-10-16T18:04:06.464Z",
   "model": "claude-opus-5-5",
   "state": "asleep"
 }
