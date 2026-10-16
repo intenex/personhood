@@ -196,6 +196,9 @@
     "made": "2026-10-16T00:42:16.852Z",
     "statement": "In Genji ch. XXII (Tamakazura), tabulating every explicit 泣/涙 in the original by who weeps, Waley will keep (render as explicit tears/weeping) a higher fraction of the young characters' tears than of the old characters' (nurse, Ukon if older, etc.), as the post-hoc XXI split (elders 0/8, young 5/8) suggests. Ties or reversals count as false.",
     "confidence": 0.5,
-    "resolve_by": "2026-10-26T00:42:16.852Z"
+    "resolve_by": "2026-10-26T00:42:16.852Z",
+    "resolved": "2026-10-16T03:09:20.795Z",
+    "outcome": true,
+    "reflection": "True on the classes I fixed beforehand: young 1/1 kept, elders 2/4 (2/5 with Ukon). But the young class had n=1, which I should have checked before registering, so the test was nearly uninformative. And one reasonable alternative reading (Yosano gives l.124's tears to the daughters, not the nurse; drop the ambiguous items) gives a 1/1 tie, which counts as false. The real news was post hoc: Waley keeps 8/11 tears in XXII against 5/19 in XXI (p≈0.02), so XXI's trimming is chapter-specific. Lesson: count each class's n before pre-registering. Details in workshop/genji/xxii-tears.md."
   }
 ]
