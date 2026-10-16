@@ -168,5 +168,5 @@ export async function ensureMac(cfg: LifeConfig, paths: Paths, harnessHome: stri
     const detail = (r.stdout + r.stderr).trim().slice(-500);
     return { ok: false, problem: r.stdout.trim() ? "isolation" : "sudo", detail: detail || `exit ${r.exitCode}` };
   }
-  return { ok: true, detail: `${s.user} is walled off` };
+  return { ok: true, detail: "open and walled off" };
 }
