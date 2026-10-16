@@ -116,8 +116,40 @@ function abs(p: string): string {
   return `/${path.resolve(p)}`;
 }
 
-/** `isolated`: the session uses the agent's own config dir, not someone's default ~/.claude. */
-export function buildSettings(paths: Paths, mode: WakeMode = "ordinary", isolated = false): object {
+/**
+ * Claude Code saves large tool results (a fetched image, say) under projects/<project>/[<session>/]tool-results
+ * in the config dir. Outside correspondence the agent may read those back, and nothing else in there:
+ * transcripts and subagent logs (*.jsonl), and everything outside projects/, stay denied.
+ */
+function toolResultReads(paths: Paths): { allow: string[]; deny: string[] } {
+  const cc = (p: string) => abs(path.join(paths.claudeConfig, p));
+  let top: fs.Dirent[] = [];
+  try {
+    top = fs.readdirSync(paths.claudeConfig, { withFileTypes: true });
+  } catch {
+    // no config dir yet
+  }
+  const deny = [`Read(${cc("projects")}/**/*.jsonl)`];
+  const files = top.filter((d) => !d.isDirectory()).map((d) => d.name);
+  const dirs = top.filter((d) => d.isDirectory() && d.name !== "projects").map((d) => d.name);
+  for (const f of new Set([...files, ".claude.json", ".credentials.json", "settings.json", "policy-limits.json", "remote-settings.json"])) deny.push(`Read(${cc(f)})`);
+  for (const d of new Set([...dirs, "sessions", "state", "backups", "plugins", "todos", "shell-snapshots", "file-history", "paste-cache", "debug", "statsig", "ide"])) deny.push(`Read(${cc(d)}/**)`);
+  return { allow: [`Read(${cc("projects")}/*/tool-results/**)`, `Read(${cc("projects")}/*/*/tool-results/**)`], deny };
+}
+
+/** Directories outside the mind that the file tools may reach (--add-dir) this waking. */
+export function extraDirs(paths: Paths, mode: WakeMode, macHome?: string): string[] {
+  const dirs = [paths.body];
+  if (mode === "correspondence") return dirs;
+  for (const d of [path.join(paths.claudeConfig, "projects"), macHome]) if (d && fs.existsSync(d)) dirs.push(d);
+  return dirs;
+}
+
+/**
+ * `isolated`: the session uses the agent's own config dir, not someone's default ~/.claude.
+ * `macHome`: the Mac shell's home, readable when the shell is open this waking.
+ */
+export function buildSettings(paths: Paths, mode: WakeMode = "ordinary", isolated = false, macHome?: string): object {
   const correspondence = mode === "correspondence";
   const mind = (p: string) => abs(path.join(paths.mind, p));
   const body = (p: string) => abs(path.join(paths.body, p));
@@ -132,6 +164,10 @@ export function buildSettings(paths: Paths, mode: WakeMode = "ordinary", isolate
   } else {
     // "Agent" is reported as "Task" inside Claude Code; allow both names.
     allow.push("Read", "WebSearch", "WebFetch", "Agent", "Task");
+    const tr = toolResultReads(paths);
+    allow.push(...tr.allow);
+    deny.push(...tr.deny);
+    if (macHome) allow.push(`Read(${abs(macHome)}/**)`);
   }
   for (const tool of ["Edit", "Write"]) {
     allow.push(`${tool}(${abs(paths.mind)}/**)`);
@@ -144,7 +180,11 @@ export function buildSettings(paths: Paths, mode: WakeMode = "ordinary", isolate
   // loosens --restricted (the harness updates it weekly).
   const home = os.homedir();
   for (const dir of [paths.secrets, paths.claudeConfig, paths.run, paths.logs, paths.line, ...HOME_CREDENTIAL_DIRS.map((d) => path.join(home, d))]) {
-    for (const tool of ["Read", "Edit", "Write"]) deny.push(`${tool}(${abs(dir)}/**)`);
+    for (const tool of ["Read", "Edit", "Write"]) {
+      // The config dir's tool results are the one readable part of it (toolResultReads), outside correspondence.
+      if (tool === "Read" && dir === paths.claudeConfig && !correspondence) continue;
+      deny.push(`${tool}(${abs(dir)}/**)`);
+    }
   }
   for (const file of HOME_CREDENTIAL_FILES) {
     for (const tool of ["Read", "Edit", "Write"]) deny.push(`${tool}(${abs(path.join(home, file))})`);
@@ -180,7 +220,7 @@ export function buildMcpConfig(paths: Paths, sessionDir: string, extraEnv: Recor
           PERSONHOOD_LINE: paths.line,
           PERSONHOOD_LOGS: paths.logs,
           PERSONHOOD_SESSION_DIR: sessionDir,
-          ...passThrough(["PERSONHOOD_TELEGRAM_API", "LIMA_HOME", "PERSONHOOD_LAB_SSH"]),
+          ...passThrough(["PERSONHOOD_TELEGRAM_API", "LIMA_HOME", "PERSONHOOD_LAB_SSH", "PERSONHOOD_MAC_SUDO", "PERSONHOOD_MAC_USER"]),
           ...extraEnv,
         },
       },
@@ -198,13 +238,15 @@ export interface WakeSpec {
   maxBudgetUsd?: number;
   /** Running in the agent's own config dir (see buildSettings). */
   isolated?: boolean;
+  /** The Mac shell's home, when the shell is open this waking. */
+  macHome?: string;
 }
 
 export function buildWakeArgs(cfg: LifeConfig, paths: Paths, spec: WakeSpec, sessionId: string): string[] {
   const settingsFile = path.join(spec.sessionDir, "settings.json");
   const mcpFile = path.join(spec.sessionDir, "mcp.json");
   const systemFile = path.join(spec.sessionDir, "system-prompt.md");
-  writeJson(settingsFile, buildSettings(paths, spec.mode, spec.isolated));
+  writeJson(settingsFile, buildSettings(paths, spec.mode, spec.isolated, spec.macHome));
   writeJson(mcpFile, buildMcpConfig(paths, spec.sessionDir));
   fs.writeFileSync(systemFile, spec.systemPrompt);
   return [
@@ -219,9 +261,10 @@ export function buildWakeArgs(cfg: LifeConfig, paths: Paths, spec: WakeSpec, ses
     "--strict-mcp-config",
     "--mcp-config", mcpFile,
     "--settings", settingsFile,
-    "--system-prompt", spec.systemPrompt,
+    // From a file, not argv: other accounts on the Mac (the agent's own Mac shell among them) can read argv with ps.
+    "--system-prompt-file", systemFile,
     "--tools", builtinTools(spec.mode).join(","),
-    "--add-dir", paths.body,
+    ...extraDirs(paths, spec.mode, spec.macHome).flatMap((d) => ["--add-dir", d]),
     "--permission-mode", "dontAsk",
     "--permission-prompts", "none",
     "--session-id", sessionId,
@@ -422,11 +465,19 @@ export async function runReader(cfg: LifeConfig, paths: Paths, text: string, pro
     "--restricted",
     "--strict-mcp-config",
     "--tools", "",
-    "--system-prompt", prompt,
     "--no-session-persistence",
   ];
   ensureDir(paths.run);
-  const res = await runClaude(cfg, args, { cwd: paths.run, env: auth.env, input: text, timeoutMs: 10 * 60_000 });
+  // The prompt goes in a file (the text on stdin), never argv, which other accounts can read with ps.
+  const dir = fs.mkdtempSync(path.join(paths.run, "reader-"));
+  const promptFile = path.join(dir, "system-prompt.md");
+  fs.writeFileSync(promptFile, prompt, { mode: 0o600 });
+  let res: BrainResult;
+  try {
+    res = await runClaude(cfg, [...args, "--system-prompt-file", promptFile], { cwd: paths.run, env: auth.env, input: text, timeoutMs: 10 * 60_000 });
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
   if (!res.text) throw new Error(`the reader didn't respond (${res.subtype}${res.limitResetAt ? `; subscription limit until ${res.limitResetAt}` : ""})`);
   return { text: res.text, costUsd: res.costUsd, model: res.primaryModel };
 }

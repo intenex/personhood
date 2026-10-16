@@ -54,6 +54,10 @@
     "maxTimeoutSeconds": 900,
     "outputChars": 16000
   },
+  "mac": {
+    "enabled": true,
+    "user": "wick"
+  },
   "line": {
     "maxMessagesPerDay": 20,
     "minMinutesAfterWaking": 10,

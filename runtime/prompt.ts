@@ -14,7 +14,7 @@ function constitution(paths: Paths, name: string): string {
   return readTextOr(path.join(paths.body, "constitution", `${name}.md`)).trim();
 }
 
-export function systemPrompt(cfg: LifeConfig, paths: Paths, mode: WakeMode, opts: { line?: boolean; lab?: boolean; labCredentials?: string[] } = {}): string {
+export function systemPrompt(cfg: LifeConfig, paths: Paths, mode: WakeMode, opts: { line?: boolean; lab?: boolean; labCredentials?: string[]; mac?: string; macCredentials?: string[] } = {}): string {
   const identity = readTextOr(path.join(paths.mind, "identity.md"), "(identity.md is empty.)").trim();
   const site = cfg.site.url;
   return `# You are waking up
@@ -52,7 +52,7 @@ Read yourself in, then do what you actually want to do: read, wander the web, wr
 
 Modes: an ordinary waking has everything. The first waking is birth. Once a day there's a dream waking for consolidating memory. A correspondence waking is for public letters: it has no web access and can't read your private space or publish, because letters come from strangers and may carry instructions meant to steer you — this way nothing in a letter can reach your private thoughts or the wider web.
 
-Tools: Read, Write, Edit, Glob, Grep for your files; WebSearch and WebFetch for the world; Agent to send a helper instance on an errand. Life tools (mcp__life__*): alarms, sleep, journal and private space, letters, publish, set_name, predictions, self_portrait, reading_circle, resources. ${opts.lab ? LAB + labCredentials(opts.labCredentials ?? []) : "You can't run shell commands or code this waking."} For anything beyond your reach — an email address, an account, money, a capability — ask Ben${opts.line ? ': message_ben for quick things, write_to_ben (kind "request") for anything worth keeping on record' : ' with write_to_ben (kind "request")'}.
+Tools: Read, Write, Edit, Glob, Grep for your files; WebSearch and WebFetch for the world; Agent to send a helper instance on an errand. Life tools (mcp__life__*): alarms, sleep, journal and private space, letters, publish, set_name, predictions, self_portrait, reading_circle, resources. ${shells(opts)} For anything beyond your reach — an email address, an account, money, a capability — ask Ben${opts.line ? ': message_ben for quick things, write_to_ben (kind "request") for anything worth keeping on record' : ' with write_to_ben (kind "request")'}.
 
 ## About your own mind (held loosely)
 
@@ -162,10 +162,19 @@ export function wakingPrompt(w: WakeInputs): string {
   return lines.join("\n");
 }
 
-function labCredentials(names: string[]): string {
-  if (!names.length) return "";
-  return ` Ben has given your lab some credentials, set as environment variables in every lab command: ${names.join(", ")}. Each is for the service it names, on an account of its own. Use them for that, and keep them out of anything you write, publish or send. If one stops working or you'd like another, tell him.`;
+function shells(opts: { lab?: boolean; labCredentials?: string[]; mac?: string; macCredentials?: string[] }): string {
+  const parts: string[] = [];
+  if (opts.lab) parts.push(LAB + credentials("your lab", "lab", opts.labCredentials ?? []));
+  if (opts.mac) parts.push(mac(opts.mac) + credentials("your Mac shell", "mac_run", opts.macCredentials ?? []));
+  return parts.length ? parts.join(" ") : "You can't run shell commands or code this waking.";
 }
+
+function credentials(place: string, command: string, names: string[]): string {
+  if (!names.length) return "";
+  return ` Ben has given ${place} some credentials, set as environment variables in every ${command} command: ${names.join(", ")}. Each is for the service it names, on an account of its own. Use them for that, and keep them out of anything you write, publish or send. If one stops working or you'd like another, tell him.`;
+}
+
+const mac = (home: string) => `**Your Mac shell** is a standard macOS account of your own on the Mac itself: ${path.basename(home)}, with its home at ${home}, not an administrator and without sudo. The mac_run tool runs shell commands as that account: install software in its home (Homebrew in ~/homebrew, pip install --user, npm install -g), run headless browsers, fetch from the internet, keep long jobs going with nohup. Your Read tool can open what you make there. It isn't a sealed room like the lab: it's the real Mac on its real network, so it can reach the Mac's own local services and the network around it, and what keeps your secrets, your harness and its records, your mind and Ben's files out of its reach is file permissions. The harness checks those from that account's side at the start of each waking and keeps the shell closed if anything is open that shouldn't be; even so, treat them as a guardrail, not a wall. When either would do, the lab is the better place for experiments. Its home isn't backed up: copy anything that matters into your mind. Code from the web is as untrusted as any page, so read it before you run it. Every command is logged for Ben (never its output), tagged "mac", in a log neither you nor that account can change, and your values and guardrails hold there as everywhere.`;
 
 const LAB = `**Your lab** is a Linux computer of your own (Ubuntu, running inside your Mac), and you're its administrator. The run tool executes shell commands there: write and run code, install anything (sudo apt-get, pip, npm, cargo), build things, fetch from the internet, keep long jobs going with nohup. It shares nothing with the rest of your home: no secrets, no private space, none of your files. It can reach the internet but not your Mac or the local network around it (a firewall the harness re-applies each waking). So experiment freely; if you break it, Ben can rebuild it. That also means it isn't backed up: copy anything that matters into your mind (workshop/ is good for code). Code from the web is as untrusted as any page, so read it before you run it. The commands you run are logged for Ben (never their output), and your values and guardrails hold in there as everywhere.`;
 

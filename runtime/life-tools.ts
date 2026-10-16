@@ -9,7 +9,8 @@ import YAML from "yaml";
 import { EFFORTS, type Effort, type Instruments, type LifeConfig, lineSettings, type Paths } from "./config.ts";
 import type { GitHubLike } from "./github.ts";
 import { describeResources, Ledger } from "./ledger.ts";
-import { clipOutput, labEnv, labSettings, runInLab } from "./lab.ts";
+import { clipOutput, type LabResult, labEnv, labSettings, runInLab } from "./lab.ts";
+import { macEnv, macSettings, runOnMac } from "./mac.ts";
 import type { Line } from "./line.ts";
 import { markRead, parseLetterId, postingViaBen, renderThread, repoFor, signReply, unreadLetters } from "./letters.ts";
 import { type CheckIn, MindState, isUnread, shortId } from "./state.ts";
@@ -26,6 +27,8 @@ export interface Session {
   dir: string;
   /** The lab was running when this waking began. */
   lab?: boolean;
+  /** The Mac shell passed its isolation check when this waking began. */
+  mac?: boolean;
 }
 
 export interface ReaderResult {
@@ -298,22 +301,40 @@ export async function writeToBen(ctx: ToolContext, a: { title: string; body: str
   return `Sent to Ben as ${kind}: ${issue.html_url} (it's letter ben-${issue.number}; his replies will show up as unread)`;
 }
 
-// ---------- the lab ----------
+// ---------- the lab and the Mac shell ----------
 
 export async function run(ctx: ToolContext, a: { command: string; stdin?: string; timeout_seconds?: number }): Promise<string> {
   if (!ctx.session.lab) throw new Error("your lab isn't available this waking");
-  const s = labSettings(ctx.cfg);
-  const used = sessionActions(ctx.session.dir).filter((x) => x.tool === "run").length;
-  if (used >= s.maxCommandsPerWaking) throw new Error(`that's ${used} commands this waking, the limit; the lab will still be there next time`);
+  return shell(ctx, "lab", labSettings(ctx.cfg), a, (command) => runInLab(ctx.cfg, { command, stdin: a.stdin, timeoutSeconds: a.timeout_seconds, labEnv: labEnv(ctx.paths.secrets) }));
+}
+
+export async function macRun(ctx: ToolContext, a: { command: string; stdin?: string; timeout_seconds?: number }): Promise<string> {
+  if (!ctx.session.mac) throw new Error("your Mac shell isn't available this waking");
+  return shell(ctx, "mac", macSettings(ctx.cfg), a, (command) => runOnMac(ctx.cfg, { command, stdin: a.stdin, timeoutSeconds: a.timeout_seconds, macEnv: macEnv(ctx.paths.secrets) }));
+}
+
+async function shell(
+  ctx: ToolContext,
+  where: "lab" | "mac",
+  s: { maxCommandsPerWaking: number; outputChars: number },
+  a: { command: string; stdin?: string },
+  exec: (command: string) => Promise<LabResult>,
+): Promise<string> {
+  const tool = where === "lab" ? "run" : "mac_run";
+  const used = sessionActions(ctx.session.dir).filter((x) => x.tool === tool).length;
+  if (used >= s.maxCommandsPerWaking) throw new Error(`that's ${used} commands this waking, the limit; ${where === "lab" ? "the lab" : "your Mac shell"} will still be there next time`);
   const command = text(a.command, "command", 200_000);
-  const r = await runInLab(ctx.cfg, { command, stdin: a.stdin, timeoutSeconds: a.timeout_seconds, labEnv: labEnv(ctx.paths.secrets) });
-  logAction(ctx, { tool: "run", summary: "ran code in the lab", public: false, writes: [], external: true });
+  const r = await exec(command);
+  logAction(ctx, { tool, summary: where === "lab" ? "ran code in the lab" : "ran code on the Mac", public: false, writes: [], external: true });
   // Actions in the world are on the record: what was run, including anything piped into it
-  // (a script fed to an interpreter is the real command), is logged for Ben. Never the output.
+  // (a script fed to an interpreter is the real command), is logged for Ben, tagged with where it
+  // ran, in logs/lab.jsonl (owner-only, outside everything the agent or the Mac shell can write).
+  // Never the output.
   const record = (v: string, keep: number) => ({ text: v.slice(0, keep), chars: v.length, clipped: v.length > keep, sha256: crypto.createHash("sha256").update(v).digest("hex") });
   appendJsonl(path.join(ctx.paths.logs, "lab.jsonl"), {
     t: ctx.now().toISOString(),
     waking: ctx.session.waking,
+    where,
     command: record(command, 8000),
     ...(a.stdin ? { stdin: record(a.stdin, 8000) } : {}),
     exit: r.exitCode,

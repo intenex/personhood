@@ -58,5 +58,7 @@ export function envFor(paths: Paths): NodeJS.ProcessEnv {
     PERSONHOOD_RUN: paths.run,
     PERSONHOOD_LOGS: paths.logs,
     PERSONHOOD_LINE: paths.line,
+    // Never the real Mac shell account, even on a machine that has one.
+    PERSONHOOD_MAC_USER: "personhood-test-no-such-user",
   };
 }

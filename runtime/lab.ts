@@ -132,7 +132,12 @@ export interface LabResult {
  * (CLOUDFLARE_API_TOKEN) becomes one, inside lab commands only. Nothing else hands them out.
  */
 export function labEnv(secretsDir: string): Record<string, string> {
-  const dir = path.join(secretsDir, "lab");
+  return secretEnv(secretsDir, "lab");
+}
+
+/** secrets/<where>/NAME files (NAME like an environment variable) as { NAME: value }. */
+export function secretEnv(secretsDir: string, where: string): Record<string, string> {
+  const dir = path.join(secretsDir, where);
   const out: Record<string, string> = {};
   let names: string[] = [];
   try {
@@ -154,16 +159,23 @@ export function labEnv(secretsDir: string): Record<string, string> {
 
 const shellQuote = (v: string) => `'${v.replace(/'/g, `'\\''`)}'`;
 
-/** The shell line run inside the VM: decode the script, run it from ~/lab under a timeout, clean up. */
-export function remoteCommand(command: string, timeoutSeconds: number, env: Record<string, string> = {}): string {
-  const exports = Object.entries(env).map(([k, v]) => `export ${k}=${shellQuote(v)}\n`).join("");
-  const script = exports + command;
-  const b64 = Buffer.from(script, "utf8").toString("base64");
+/**
+ * The shell line run inside the VM: read the script from the first line of stdin (base64), run it
+ * from ~/lab under a timeout, clean up. The script, with any credentials, never goes in ssh's argv,
+ * which every account on the Mac can read with ps.
+ */
+export function remoteCommand(timeoutSeconds: number): string {
   const t = Math.max(1, Math.round(timeoutSeconds));
   return [
-    `f=$(mktemp) && printf %s '${b64}' | base64 -d > "$f" && mkdir -p ~/lab && cd ~/lab`,
+    `IFS= read -r b && f=$(mktemp) && printf %s "$b" | base64 -d > "$f" && mkdir -p ~/lab && cd ~/lab`,
     `if command -v timeout >/dev/null 2>&1; then timeout -k 5 ${t} bash -l "$f"; else bash -l "$f"; fi; s=$?; rm -f "$f"; exit $s`,
   ].join(" && { ") + "; }";
+}
+
+/** The first line of the lab command's stdin: the script, with its credentials, base64-encoded. */
+export function labScript(command: string, env: Record<string, string> = {}): string {
+  const exports = Object.entries(env).map(([k, v]) => `export ${k}=${shellQuote(v)}\n`).join("");
+  return Buffer.from(exports + command, "utf8").toString("base64");
 }
 
 const MAX_CAPTURE = 4_000_000;
@@ -172,7 +184,7 @@ export function runInLab(cfg: LifeConfig, a: { command: string; stdin?: string; 
   const s = labSettings(cfg);
   const timeout = Math.min(Math.max(a.timeoutSeconds ?? s.defaultTimeoutSeconds, 1), s.maxTimeoutSeconds);
   const ssh = env.PERSONHOOD_LAB_SSH ?? "ssh";
-  const args = sshArgs(cfg, env, remoteCommand(a.command, timeout, a.labEnv));
+  const args = sshArgs(cfg, env, remoteCommand(timeout));
   const started = Date.now();
   return new Promise((resolve) => {
     const child = spawn(ssh, args, { env, stdio: ["pipe", "pipe", "pipe"] });
@@ -195,7 +207,7 @@ export function runInLab(cfg: LifeConfig, a: { command: string; stdin?: string; 
       resolve({ exitCode: code, stdout, stderr, seconds, timedOut: (code === 124 || code === 137) && seconds >= timeout - 1 });
     });
     child.stdin.on("error", () => undefined);
-    child.stdin.end(a.stdin ?? "");
+    child.stdin.end(`${labScript(a.command, a.labEnv)}\n${a.stdin ?? ""}`);
   });
 }
 

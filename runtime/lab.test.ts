@@ -3,7 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
 import { loadConfig, loadInstruments } from "./config.ts";
-import { clipOutput, labEnv, labExists, remoteCommand, runInLab } from "./lab.ts";
+import { clipOutput, labEnv, labExists, labScript, remoteCommand, runInLab } from "./lab.ts";
 import { toolAllowed } from "./life-server.ts";
 import { run, type ToolContext } from "./life-tools.ts";
 import { MindState } from "./state.ts";
@@ -23,7 +23,7 @@ function fakeSsh(): { ssh: string; home: string } {
 const cfg = loadConfig(REPO);
 
 test("the remote line runs under a timeout in ~/lab, and survives any quoting", async () => {
-  assert.match(remoteCommand("echo hi", 30), /timeout -k 5 30 bash -l/);
+  assert.match(remoteCommand(30), /timeout -k 5 30 bash -l/);
   const { ssh, home } = fakeSsh();
   const env = { ...process.env, PERSONHOOD_LAB_SSH: ssh };
   const tricky = `x='single "double" $HOME \`tick\`'; printf '%s\\n' "$x"; echo "line two"; pwd`;
@@ -31,6 +31,18 @@ test("the remote line runs under a timeout in ~/lab, and survives any quoting", 
   assert.equal(r.exitCode, 0, r.stderr);
   assert.equal(r.stdout, `single "double" $HOME \`tick\`\nline two\n${path.join(home, "lab")}\n`);
   assert.equal(r.timedOut, false);
+});
+
+test("the script and its credentials go on stdin, never in ssh's argv (which any account can read with ps)", async () => {
+  const { ssh } = fakeSsh();
+  const argv = `${ssh}.argv`;
+  const logging = `${ssh}-logging`;
+  fs.writeFileSync(logging, `#!/bin/bash\nprintf '%s\\n' "$@" >> "${argv}"\nexec "${ssh}" "$@"\n`);
+  fs.chmodSync(logging, 0o755);
+  const r = await runInLab(cfg, { command: "echo visible-only-on-stdin", labEnv: { DEMO_TOKEN: "s3cret" } }, { ...process.env, PERSONHOOD_LAB_SSH: logging });
+  assert.equal(r.stdout, "visible-only-on-stdin\n", r.stderr);
+  const args = fs.readFileSync(argv, "utf8");
+  assert.ok(!args.includes("visible-only-on-stdin") && !args.includes("s3cret") && !args.includes(labScript("echo visible-only-on-stdin", { DEMO_TOKEN: "s3cret" })));
 });
 
 test("stdin writes files; failures report their exit code and stderr", async () => {

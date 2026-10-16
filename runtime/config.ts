@@ -77,6 +77,16 @@ export interface LifeConfig {
     maxTimeoutSeconds: number;
     outputChars: number;
   }>;
+  /** The Mac shell: commands on the Mac itself as a standard account of the agent's own (see mac.ts). */
+  mac?: Partial<{
+    enabled: boolean;
+    user: string;
+    home: string;
+    maxCommandsPerWaking: number;
+    defaultTimeoutSeconds: number;
+    maxTimeoutSeconds: number;
+    outputChars: number;
+  }>;
   /** The direct line to Ben (Telegram), when it's set up. */
   line?: {
     /** Messages the agent can send Ben per day. */

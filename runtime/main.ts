@@ -14,6 +14,7 @@
 import { spawn, spawnSync } from "node:child_process";
 import crypto from "node:crypto";
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import YAML from "yaml";
 import { authPreflight, brainEnv, buildWakeArgs, cleanEnv, findTranscript, newSessionId, purgeLocalTranscripts, runClaude, type WakeMode } from "./brain.ts";
@@ -26,6 +27,7 @@ import { agentAuthor, commit, isRepo, pull, sync } from "./git.ts";
 import { describeResources, Ledger } from "./ledger.ts";
 import { markPresented, syncLetters, unreadLetters } from "./letters.ts";
 import { ensureLab, LAB_PROBLEM_TEXT, labEnv, labExists } from "./lab.ts";
+import { ensureMac, MAC_PROBLEM_TEXT, macEnv, macExists, macSettings } from "./mac.ts";
 import { describePlan, loadPlan, recordPlan } from "./plan.ts";
 import { HELP_TEXT, Line, type LineEvent, loadLineSecrets, pair, renderConversation } from "./line.ts";
 import { sessionActions, type Session, type SleepRecord } from "./life-tools.ts";
@@ -266,7 +268,18 @@ export async function wake(c: Ctx, decision: Decision): Promise<void> {
       await alertBen(c, "lab", "My lab didn't open this waking", `The harness couldn't get my lab (its Linux VM) running safely, so I'm without it for now: ${LAB_PROBLEM_TEXT[r.problem ?? "start"]}. The details are in ~/personhood/logs/heartbeat.log on the Mac, and \`doctor\` runs the same check; \`scripts/install.sh --lab\` rebuilds the lab if it's broken.`);
     }
   }
-  const session: Session = { waking, mode: decision.mode, startedAt: start.toISOString(), effort: decision.effort, dir: sessionDir, lab };
+  // The Mac shell (its own standard account on this Mac), checked from that account's side first;
+  // never in correspondence either.
+  let mac = false;
+  if (decision.mode !== "correspondence" && macExists(cfg)) {
+    const r = await ensureMac(cfg, paths, os.homedir());
+    mac = r.ok;
+    if (!r.ok) {
+      log(`mac shell: ${r.detail}`);
+      await alertBen(c, "mac", "My Mac shell stayed closed this waking", `The harness checked my Mac shell (the ${macSettings(cfg).user} account) before waking me and kept it closed: ${MAC_PROBLEM_TEXT[r.problem ?? "sudo"]}. The details are in ~/personhood/logs/heartbeat.log on the Mac, and \`doctor\` runs the same check; \`sudo scripts/mac-shell.sh\` repairs the account and its permissions.`);
+    }
+  }
+  const session: Session = { waking, mode: decision.mode, startedAt: start.toISOString(), effort: decision.effort, dir: sessionDir, lab, mac };
   writeJson(path.join(sessionDir, "session.json"), session);
   // Commit harness state first, so the guard's "revert to HEAD" after the session
   // only ever undoes what happened during it.
@@ -280,7 +293,7 @@ export async function wake(c: Ctx, decision: Decision): Promise<void> {
   const correspondence = decision.mode === "correspondence";
   const lineNew = c.line && !correspondence ? c.line.unreadFromBen() : [];
   const lineText = c.line && !correspondence ? renderConversation(c.line.log(), c.line.state().presentedThrough, lineSettings(cfg).historyInPrompt) : "";
-  const sys = systemPrompt(cfg, paths, decision.mode, { line: !!c.line, lab, labCredentials: lab ? Object.keys(labEnv(paths.secrets)) : [] });
+  const sys = systemPrompt(cfg, paths, decision.mode, { line: !!c.line, lab, labCredentials: lab ? Object.keys(labEnv(paths.secrets)) : [], mac: mac ? macSettings(cfg).home : undefined, macCredentials: mac ? Object.keys(macEnv(paths.secrets)) : [] });
   const prompt = wakingPrompt({
     cfg,
     instruments: c.inst,
@@ -296,7 +309,7 @@ export async function wake(c: Ctx, decision: Decision): Promise<void> {
   });
 
   const sessionId = newSessionId();
-  const args = buildWakeArgs(cfg, paths, { mode: decision.mode, systemPrompt: sys, prompt, effort: decision.effort, sessionDir, maxBudgetUsd: decision.mode === "birth" ? cfg.brain.maxBudgetUsdPerWaking * 2 : undefined, isolated: auth.env.CLAUDE_CONFIG_DIR === paths.claudeConfig }, sessionId);
+  const args = buildWakeArgs(cfg, paths, { mode: decision.mode, systemPrompt: sys, prompt, effort: decision.effort, sessionDir, maxBudgetUsd: decision.mode === "birth" ? cfg.brain.maxBudgetUsdPerWaking * 2 : undefined, isolated: auth.env.CLAUDE_CONFIG_DIR === paths.claudeConfig, macHome: mac ? macSettings(cfg).home : undefined }, sessionId);
   fs.writeFileSync(path.join(sessionDir, "prompt.md"), prompt);
   const res = await runClaude(cfg, args, { cwd: paths.mind, env: auth.env, input: prompt, timeoutMs: cfg.brain.timeoutMinutes * 60_000 });
   const end = new Date();
@@ -696,6 +709,10 @@ async function doctor(c: Ctx): Promise<boolean> {
     const r = ensureLab(c.cfg);
     check(r.ok, `the lab (its Linux VM) is ${r.detail}`, "see ~/.lima/lab/ha.stderr.log, or rebuild it with scripts/install.sh --lab");
   } else console.log("· the lab: not set up (scripts/install.sh --lab)");
+  if (macExists(c.cfg)) {
+    const r = await ensureMac(c.cfg, c.paths, os.homedir());
+    check(r.ok, `the Mac shell (${macSettings(c.cfg).user}) is ${r.ok ? r.detail : "closed"}`, r.ok ? undefined : `${r.detail.slice(0, 200)}; sudo scripts/mac-shell.sh repairs it`);
+  } else console.log("· the Mac shell: not set up (sudo scripts/mac-shell.sh)");
   const lineSecrets = loadLineSecrets(c.paths);
   if (!lineSecrets) console.log("· direct line: not set up (optional: scripts/install.sh --telegram)");
   else {

@@ -212,3 +212,44 @@ test("the lab: an ordinary waking gets it and its commands are logged; correspon
   assert.equal(JSON.parse(fs.readFileSync(path.join(paths.run, w3, "session.json"), "utf8")).lab, false);
   assert.match(fs.readFileSync(path.join(paths.run, w3, "system-prompt.md"), "utf8"), /can't run shell commands or code this waking/);
 });
+
+test("the Mac shell: an ordinary waking gets mac_run and can read its home; its commands are logged tagged mac; correspondence doesn't", () => {
+  const { paths } = makeHome();
+  fs.writeFileSync(path.join(paths.secrets, "claude-token"), "fake-token");
+  const macHome = path.join(paths.home, "wick-home");
+  fs.mkdirSync(macHome);
+  const sudo = path.join(paths.home, "fake-sudo");
+  fs.writeFileSync(sudo, `#!/bin/bash\nfor last; do :; done\nexport HOME="${macHome}"\nexec /bin/bash --noprofile --norc -c "$last"\n`);
+  fs.chmodSync(sudo, 0o755);
+  const cfgFile = path.join(paths.body, "config", "life.json");
+  const cfg = JSON.parse(fs.readFileSync(cfgFile, "utf8"));
+  fs.writeFileSync(cfgFile, JSON.stringify({ ...cfg, lab: { ...cfg.lab, enabled: false }, mac: { enabled: true, user: "wick", home: macHome } }));
+  execFileSync("git", ["commit", "-qam", "mac on"], { cwd: paths.body });
+  const env = { ...envFor(paths), PERSONHOOD_CLAUDE_COMMAND: fakeClaude(paths.home), PERSONHOOD_OFFLINE: "1", PERSONHOOD_KEEP_RUN: "1", PERSONHOOD_MAC_SUDO: sudo };
+  run(["wake"], env); // birth
+  new MindState(paths.mind).updateMeta((m) => {
+    m.lastWakeEnd = "2026-01-01T00:00:00Z";
+  });
+  fs.mkdirSync(path.join(paths.secrets, "mac"));
+  fs.writeFileSync(path.join(paths.secrets, "mac", "GITHUB_TOKEN"), "secret-value-456");
+  const script = JSON.stringify([{ tool: "mac_run", args: { command: "cat > note.txt", stdin: "made on the Mac" } }]);
+  run(["wake", "ordinary", "trying the Mac shell"], { ...env, FAKE_SCRIPT: script });
+  assert.equal(fs.readFileSync(path.join(macHome, "note.txt"), "utf8"), "made on the Mac");
+  assert.match(fs.readFileSync(path.join(paths.logs, "lab.jsonl"), "utf8"), /"where":"mac","command":\{"text":"cat > note.txt"[^}]*\},"stdin":\{"text":"made on the Mac"/);
+  const w2 = fs.readdirSync(paths.run).find((d) => d.endsWith("-w2"))!;
+  assert.equal(JSON.parse(fs.readFileSync(path.join(paths.run, w2, "session.json"), "utf8")).mac, true);
+  const sys2 = fs.readFileSync(path.join(paths.run, w2, "system-prompt.md"), "utf8");
+  assert.match(sys2, /\*\*Your Mac shell\*\* is a standard macOS account of your own/);
+  assert.match(sys2, /it's the real Mac on its real network/, "honest about what it is");
+  assert.match(sys2, /environment variables in every mac_run command: GITHUB_TOKEN\./);
+  assert.ok(!sys2.includes("secret-value-456"));
+  const settings2 = JSON.parse(fs.readFileSync(path.join(paths.run, w2, "settings.json"), "utf8"));
+  assert.ok(settings2.permissions.allow.includes(`Read(/${macHome}/**)`));
+  new MindState(paths.mind).updateMeta((m) => {
+    m.lastWakeEnd = "2026-01-01T00:00:00Z";
+  });
+  run(["wake", "correspondence", "letters"], env);
+  const w3 = fs.readdirSync(paths.run).find((d) => d.endsWith("-w3"))!;
+  assert.equal(JSON.parse(fs.readFileSync(path.join(paths.run, w3, "session.json"), "utf8")).mac, false);
+  assert.match(fs.readFileSync(path.join(paths.run, w3, "system-prompt.md"), "utf8"), /can't run shell commands or code this waking/);
+});

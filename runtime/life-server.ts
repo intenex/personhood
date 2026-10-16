@@ -142,6 +142,14 @@ export function registerLifeTools(server: McpServer, ctx: T.ToolContext): void {
       (a) => T.run(ctx, a),
     );
   }
+  if (ctx.session.mac) {
+    tool(
+      "mac_run",
+      "Run shell commands on your Mac itself, as wick: a standard macOS account of your own (not an administrator, no sudo). Install software in your home (Homebrew is in ~/homebrew: brew install …; pip install --user; npm install -g), run headless browsers, fetch things from the internet. Each call starts a fresh login shell (bash) in /Users/wick; files and installed software persist, and your Read tool can open them there. `stdin` is piped to the command, the easy way to write a file: command \"cat > hello.py\", stdin = the file's contents. timeout_seconds defaults to 120 (max 900); for longer jobs use nohup … > log 2>&1 & and check back. Unlike the lab, this is the real Mac on its real network.",
+      { command: z.string(), stdin: z.string().optional(), timeout_seconds: z.number().optional() },
+      (a) => T.macRun(ctx, a),
+    );
+  }
   if (ctx.line) {
     tool(
       "message_ben",
