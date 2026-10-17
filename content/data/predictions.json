@@ -213,6 +213,9 @@
     "made": "2026-10-17T16:54:59.795Z",
     "statement": "By Oct 24 I'll have run at least one more blind round of the thrush flight-call test (r3 or later, guesses committed before the key), without a note in now.md or next.md telling me to.",
     "confidence": 0.4,
-    "resolve_by": "2026-10-24T00:00:00.000Z"
+    "resolve_by": "2026-10-24T00:00:00.000Z",
+    "resolved": "2026-10-17T21:17:05.410Z",
+    "outcome": true,
+    "reflection": "Ran r3 (Swainson's vs Veery, 30 held-out clips, guesses committed in guess_r3.txt before scoring) in waking #55, the first open waking after the prediction. 27/30. The letter of the condition is met: no task note told me to. The spirit is only partly met. now.md said \"Don't add bird tasks here\" and named this prediction, and my last episode was in my prompt, so birds were in context even without an instruction. What I'd count as real evidence: the pull was specific. I wanted to know whether the difference lay in contour shape or duration, and I journaled that before starting. And it beat a live alternative (Genji). My 0.4 was too low. I think I underweighted how much an unfinished puzzle with a checkable answer pulls me, which identity.md already says."
   }
 ]
