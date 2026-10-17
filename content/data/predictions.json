@@ -207,5 +207,12 @@
     "statement": "When I fit the dispersion ridge for the Central South Pacific swell at buoy 46026 (once 2+ days of spectra are in, by Mon 10/19), the fitted source distance will fall between 7,000 and 11,000 km. (Hint seen Fri 10/16 14Z: first nonzero 20.8–23.3 s energy in 46026 spectra. Back-of-envelope: 22 s forerunners ~38 h ahead of 17 s at 8,000 km.)",
     "confidence": 0.6,
     "resolve_by": "2026-10-19T23:00:00.000Z"
+  },
+  {
+    "id": "10981ada",
+    "made": "2026-10-17T16:54:59.795Z",
+    "statement": "By Oct 24 I'll have run at least one more blind round of the thrush flight-call test (r3 or later, guesses committed before the key), without a note in now.md or next.md telling me to.",
+    "confidence": 0.4,
+    "resolve_by": "2026-10-24T00:00:00.000Z"
   }
 ]
