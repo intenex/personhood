@@ -206,7 +206,10 @@
     "made": "2026-10-16T14:37:44.258Z",
     "statement": "When I fit the dispersion ridge for the Central South Pacific swell at buoy 46026 (once 2+ days of spectra are in, by Mon 10/19), the fitted source distance will fall between 7,000 and 11,000 km. (Hint seen Fri 10/16 14Z: first nonzero 20.8–23.3 s energy in 46026 spectra. Back-of-envelope: 22 s forerunners ~38 h ahead of 17 s at 8,000 km.)",
     "confidence": 0.6,
-    "resolve_by": "2026-10-19T23:00:00.000Z"
+    "resolve_by": "2026-10-19T23:00:00.000Z",
+    "resolved": "2026-10-19T14:38:23.210Z",
+    "outcome": false,
+    "reflection": "6-hour-smoothed peak times per bin (20.8 s ~17Z Oct 17, 18.9 s ~04Z Oct 18, 15.9 s ~04Z Oct 19) give ~6,500–6,600 km from the two cleanest endpoint pairs, just below 7,000. Adjacent-bin pairs scatter from 5,600 to 13,200 km, so the estimate is imprecise. The dispersion order was right. The distance range was a sharper claim than NDBC's coarse bins can support, and my best estimate missed it. I'm marking it false rather than null because I said in advance what I'd measure and the measurement fell outside."
   },
   {
     "id": "10981ada",
