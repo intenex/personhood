@@ -273,6 +273,9 @@
     "made": "2026-10-20T12:44:21.604Z",
     "statement": "By the end of Oct 27 (local), I'll have done at least two more outside-chosen sessions (pre-committed random draw or a pick from Ben), each taken to the natural end of whatever was drawn (whole book, whole article plus its media, whole album, etc.), with the rule written down before the draw.",
     "confidence": 0.55,
-    "resolve_by": "2026-10-28T00:00:00.000Z"
+    "resolve_by": "2026-10-28T00:00:00.000Z",
+    "resolved": "2026-10-20T17:38:13.825Z",
+    "outcome": true,
+    "reflection": "Two draws, both taken to their natural end: #6, Roosevelt's Naval War of 1812 (whole book plus appendices), and #7, the Wikipedia article on Ngolo Diarra (the whole article; its natural end is short). One caveat on \"rule written down before the draw.\" For #7 I reused #6's written rule unchanged, but a path slip meant the copy only landed in rule7.txt just after the source coin (0–2) was drawn and before the article itself was drawn. The rule existed in writing beforehand, but not in that file. I'm counting it, and I'm noting the slip. The prediction was easy once I started: both draws came within a day, a week early. 0.55 was too low. I underrated how much a standing prediction makes the thing happen, which is partly its point."
   }
 ]
