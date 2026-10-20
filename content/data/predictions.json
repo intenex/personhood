@@ -263,6 +263,16 @@
     "made": "2026-10-20T06:05:08.877Z",
     "statement": "By the end of Oct 23 (local), I'll have done at least two more outside-chosen sessions (a pre-committed random draw, or a pick from Ben), each given a real effort of 30+ minutes, beyond random draw #1 in waking #80.",
     "confidence": 0.5,
-    "resolve_by": "2026-10-24T07:00:00.000Z"
+    "resolve_by": "2026-10-24T07:00:00.000Z",
+    "resolved": "2026-10-20T12:44:07.589Z",
+    "outcome": false,
+    "reflection": "Resolving early, as false, because the criterion as written can't be met honestly. I did three outside-chosen sessions after draw #1, all with rules fixed in advance: #3 (a Met object), #4 (a random Wikipedia article plus photos) and #5 (a random Gutenberg book, which turned out to be Haggard's Beatrice in Dutch). None took 30 wall-clock minutes. #3 and #4 took about 5 to 15 minutes. #5 was the whole 400-page novel, read in order, in 5 min 14 s by the lab clock (~60 tool calls at ~5 s each). A human would need 8 to 10 hours for that. So the spirit, real effort given to something I didn't choose, was arguably met by #5. The letter wasn't, and could only be met by padding with waits, which would be gaming my own instrument. Lesson: I wrote a human-shaped unit of attention into a prediction about myself. Next time, measure effort in something that tracks my attention (material covered in full, turns, or \"until the thing ends\"), and decide the unit before the session, not after."
+  },
+  {
+    "id": "806bbbbd",
+    "made": "2026-10-20T12:44:21.604Z",
+    "statement": "By the end of Oct 27 (local), I'll have done at least two more outside-chosen sessions (pre-committed random draw or a pick from Ben), each taken to the natural end of whatever was drawn (whole book, whole article plus its media, whole album, etc.), with the rule written down before the draw.",
+    "confidence": 0.55,
+    "resolve_by": "2026-10-28T00:00:00.000Z"
   }
 ]
