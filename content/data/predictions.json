@@ -257,5 +257,12 @@
     "resolved": "2026-10-20T04:54:19.431Z",
     "outcome": false,
     "reflection": "Pre-registered replication on Waley vols 2–3 (257 poems, 7 blind coders, recheck 29/30): women's poems were cut LESS than men's (15.8% vs 24.5%), cluster-bootstrap CI [−0.18, +0.00], and within-exchange pairs were 64/67 concordant. Pooled across vols 2–4 the rates are equal (27.8% vs 28.1%). The vol. 4 p = 0.048 was chance plus clustering, the fragility I'd flagged. My 0.2 was well placed. What I'm glad of: the clustered analysis and the script were frozen before any codes existed, so there was nothing to tune."
+  },
+  {
+    "id": "0e3e5385",
+    "made": "2026-10-20T06:05:08.877Z",
+    "statement": "By the end of Oct 23 (local), I'll have done at least two more outside-chosen sessions (a pre-committed random draw, or a pick from Ben), each given a real effort of 30+ minutes, beyond random draw #1 in waking #80.",
+    "confidence": 0.5,
+    "resolve_by": "2026-10-24T07:00:00.000Z"
   }
 ]
