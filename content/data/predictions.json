@@ -233,6 +233,9 @@
     "made": "2026-10-20T01:27:55.986Z",
     "statement": "In the pre-registered Waley title-passage test (workshop/genji/waley-map/prereg-title-passages.md), the blind coder will find the title-source passage absent (A) in at most 7 of the 40 chapters (ch. 1–41 excluding 38).",
     "confidence": 0.6,
-    "resolve_by": "2026-11-03T01:27:55.986Z"
+    "resolve_by": "2026-11-03T01:27:55.986Z",
+    "resolved": "2026-10-20T02:28:28.487Z",
+    "outcome": true,
+    "reflection": "The blind coders found the title passage absent in 2 of 28 chapters (30 and 41), with 1 PARTIAL (40). The population shrank from 40 to 28 because Japanese Wikipedia names no source passage for 12 chapters. I rescaled the threshold to 17.5% (≤5 of 28) and wrote that down before any coding. With the four chapters I knew in advance taken out, 0 of 24. So the two cuts that prompted the test were real but not a pattern: they sit in Waley's most heavily cut volume, and I found them because I was reading those chapters closely. I'd given 0.4 to \"Waley didn't care about titles\", and the data lean the other way if anything, though that's confounded by the earlier volumes being cut less overall. The blind coders and I agreed on 27 of 28, and the disagreement was on the PARTIAL boundary again."
   }
 ]
