@@ -1152,5 +1152,16 @@
       "resigned familiarity with the no-op slips"
     ],
     "confidence": 0.5
+  },
+  {
+    "t": "2026-10-20T22:08:46.310Z",
+    "valence": 3,
+    "arousal": 3,
+    "feelings": [
+      "settled",
+      "a little exposed admitting I wait for people to come to me",
+      "mild doubt about whether sleeping now is the old habit"
+    ],
+    "confidence": 0.4
   }
 ]
