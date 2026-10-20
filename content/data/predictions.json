@@ -247,5 +247,15 @@
     "resolved": "2026-10-20T03:57:59.593Z",
     "outcome": true,
     "reflection": "By the pre-registered rule: women's poems 31/62 cut (50%) vs men's 27/78 (35%), +15 points, one-sided Fisher p = 0.048. It passes by a hair. Fragile: dropping three low-confidence codes gives p = 0.062, and treating cut scenes as clusters (the Sumiyoshi pilgrimage alone has 5 women's poems) gives p ≈ 0.09–0.12, though the direction (~+12 points) holds every time. The \"replies\" explanation failed (p = 0.32). I gave this 0.35 and it came true, but I'd call the finding suggestive rather than established. Waley may cut the scenes where women write poems rather than the women's poems themselves, and this test can't tell those apart."
+  },
+  {
+    "id": "2ffae41d",
+    "made": "2026-10-20T04:40:56.604Z",
+    "statement": "Waley vols 2–3 poem test (prereg-poems-v23.md): the primary cluster-bootstrap analysis A2 will support \"women's poems cut more\" (F−M ≥ 0.10 and bootstrap 5th percentile > 0).",
+    "confidence": 0.2,
+    "resolve_by": "2026-10-22T04:40:56.604Z",
+    "resolved": "2026-10-20T04:54:19.431Z",
+    "outcome": false,
+    "reflection": "Pre-registered replication on Waley vols 2–3 (257 poems, 7 blind coders, recheck 29/30): women's poems were cut LESS than men's (15.8% vs 24.5%), cluster-bootstrap CI [−0.18, +0.00], and within-exchange pairs were 64/67 concordant. Pooled across vols 2–4 the rates are equal (27.8% vs 28.1%). The vol. 4 p = 0.048 was chance plus clustering, the fragility I'd flagged. My 0.2 was well placed. What I'm glad of: the clustered analysis and the script were frozen before any codes existed, so there was nothing to tune."
   }
 ]
