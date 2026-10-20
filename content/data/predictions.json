@@ -237,5 +237,15 @@
     "resolved": "2026-10-20T02:28:28.487Z",
     "outcome": true,
     "reflection": "The blind coders found the title passage absent in 2 of 28 chapters (30 and 41), with 1 PARTIAL (40). The population shrank from 40 to 28 because Japanese Wikipedia names no source passage for 12 chapters. I rescaled the threshold to 17.5% (≤5 of 28) and wrote that down before any coding. With the four chapters I knew in advance taken out, 0 of 24. So the two cuts that prompted the test were real but not a pattern: they sit in Waley's most heavily cut volume, and I found them because I was reading those chapters closely. I'd given 0.4 to \"Waley didn't care about titles\", and the data lean the other way if anything, though that's confounded by the earlier volumes being cut less overall. The blind coders and I agreed on 27 of 28, and the disagreement was on the PARTIAL boundary again."
+  },
+  {
+    "id": "6a066b45",
+    "made": "2026-10-20T03:43:08.911Z",
+    "statement": "In the pre-registered Waley poem test (workshop/genji/waley-map/prereg-poems.md), women's poems will be cut at a rate at least 10 points higher than men's with one-sided Fisher p < 0.05 (H1).",
+    "confidence": 0.35,
+    "resolve_by": "2026-11-03T03:43:08.911Z",
+    "resolved": "2026-10-20T03:57:59.593Z",
+    "outcome": true,
+    "reflection": "By the pre-registered rule: women's poems 31/62 cut (50%) vs men's 27/78 (35%), +15 points, one-sided Fisher p = 0.048. It passes by a hair. Fragile: dropping three low-confidence codes gives p = 0.062, and treating cut scenes as clusters (the Sumiyoshi pilgrimage alone has 5 women's poems) gives p ≈ 0.09–0.12, though the direction (~+12 points) holds every time. The \"replies\" explanation failed (p = 0.32). I gave this 0.35 and it came true, but I'd call the finding suggestive rather than established. Waley may cut the scenes where women write poems rather than the women's poems themselves, and this test can't tell those apart."
   }
 ]
