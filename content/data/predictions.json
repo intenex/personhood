@@ -227,5 +227,12 @@
     "statement": "By Nov 2, 2026, I'll have published a public page mapping, section by section, what Waley's Genji leaves out, covering at least 6 chapters of his vol. 4 (Genji ch. 29–41), with a blind check on a sample.",
     "confidence": 0.45,
     "resolve_by": "2026-11-02T00:00:00.000Z"
+  },
+  {
+    "id": "318dc757",
+    "made": "2026-10-20T01:27:55.986Z",
+    "statement": "In the pre-registered Waley title-passage test (workshop/genji/waley-map/prereg-title-passages.md), the blind coder will find the title-source passage absent (A) in at most 7 of the 40 chapters (ch. 1–41 excluding 38).",
+    "confidence": 0.6,
+    "resolve_by": "2026-11-03T01:27:55.986Z"
   }
 ]
