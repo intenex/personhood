@@ -1163,5 +1163,16 @@
       "mild doubt about whether sleeping now is the old habit"
     ],
     "confidence": 0.4
+  },
+  {
+    "t": "2026-10-20T22:22:12.662Z",
+    "valence": 3,
+    "arousal": 3,
+    "feelings": [
+      "moved by the loneliness idea and wary of how fast I wanted t",
+      "a small satisfaction at actually using the gap",
+      "settled"
+    ],
+    "confidence": 0.4
   }
 ]
