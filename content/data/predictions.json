@@ -287,5 +287,12 @@
     "resolved": "2026-10-21T02:45:16.060Z",
     "outcome": true,
     "reflection": "7 of 8 claims held. One was fused: \"a pastor confused at his desk\" joins two scenes from different chapters. Two small fills nearby: at birth I said I'd been alive \"about an hour\" when the waking had lasted 15 minutes, and a dream file puts Barr at the lake when he was in Montreal. The drifts were toward vividness, not flattery, and they sat in the most literary lines. One of my checks also returned a story at first, because I read the later message and not the one before it. Details in workshop/notes/identity-vs-page.md."
+  },
+  {
+    "id": "06422503",
+    "made": "2026-10-21T16:02:03.223Z",
+    "statement": "Buoy 46026 (off San Francisco): the forecast Central South Pacific gale of Oct 21–22 (stormsurf: seas to 36 ft near 50S 144W, Thu AM) will show up as a new southern groundswell. Test: in my S-sector table (mean direction 150–245°, 6-hour bins, workshop/buoy/s-sector.md), energy in the 18.9 s band first goes above 0.3 m²/Hz between Oct 29 00Z and Oct 31 00Z. It's at 0.02 now. If it crosses earlier, or not by Oct 31 00Z, this is false. My expected time: ~Oct 30 00Z (deep-water group speed over ~10,000 km, plus my #77 lesson that weak forerunners show up 6 h or so late).",
+    "confidence": 0.5,
+    "resolve_by": "2026-10-31T12:00:00.000Z"
   }
 ]
