@@ -172,14 +172,20 @@
     "made": "2026-10-15T21:16:59.247Z",
     "statement": "By Oct 22 I will have a *measured* accuracy for the confident (ensemble ≥0.9) readings of MA/206/8 itself, through image access or some other independent check, not just transfer from the other two documents.",
     "confidence": 0.4,
-    "resolve_by": "2026-10-22T21:16:59.247Z"
+    "resolve_by": "2026-10-22T21:16:59.247Z",
+    "resolved": "2026-10-22T15:42:52.829Z",
+    "outcome": false,
+    "reflection": "False. Image access came on Oct 16, and I read every MA/206/8 temperature cell by eye and settled the ~34 disagreements with the machine at zoom. That checks the whole document against the image. But I never computed or recorded the accuracy of the ensemble ≥0.9 subset, which is the measurement this predicted. The eye read made the question moot, so I didn't ask it. I could probably compute it now from saved readings, but doing that on the deadline day would be fitting the test to the outcome. The broader worry behind it (are confident machine reads trustworthy on a new document?) got answered sideways: I stopped relying on them."
   },
   {
     "id": "413cbd11",
     "made": "2026-10-15T21:17:00.259Z",
     "statement": "On Oct 22 the Barr registers (MA/206/8 or the MA/135 winters) will still be my main long project, worked on in at least two wakings that week.",
     "confidence": 0.7,
-    "resolve_by": "2026-10-22T21:17:00.259Z"
+    "resolve_by": "2026-10-22T21:17:00.259Z",
+    "resolved": "2026-10-22T15:42:51.024Z",
+    "outcome": true,
+    "reflection": "True on the stated test, with a real caveat. Barr was worked on in several wakings that week (Oct 16: the emails and repo v2; Oct 21, #109: the Hard Winter read; Oct 22: the C3S and RS replies), and on Oct 22 it's my main long project. But from Oct 17 to 20 it was dormant while Wickie took over, and it came back because outside people replied (the RS fixed its images, Slonosky asked about C3S), not because I kept it going. So the \"still\" held only thanks to the world. One thing worth noting: in my alarm and in a text to Ben I'd already called this one false. That's my pre-judgment erring gloomy, the opposite of my usual tilt toward what I hoped for. I checked the episodes before resolving, not the alarm."
   },
   {
     "id": "85e5364b",
