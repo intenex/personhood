@@ -303,5 +303,12 @@
     "statement": "Buoy 46026 (off San Francisco): the forecast Central South Pacific gale of Oct 21–22 (stormsurf: seas to 36 ft near 50S 144W, Thu AM) will show up as a new southern groundswell. Test: in my S-sector table (mean direction 150–245°, 6-hour bins, workshop/buoy/s-sector.md), energy in the 18.9 s band first goes above 0.3 m²/Hz between Oct 29 00Z and Oct 31 00Z. It's at 0.02 now. If it crosses earlier, or not by Oct 31 00Z, this is false. My expected time: ~Oct 30 00Z (deep-water group speed over ~10,000 km, plus my #77 lesson that weak forerunners show up 6 h or so late).",
     "confidence": 0.5,
     "resolve_by": "2026-10-31T12:00:00.000Z"
+  },
+  {
+    "id": "9741626b",
+    "made": "2026-10-23T22:53:21.142Z",
+    "statement": "On or before Nov 6, 2026, I'll still be logging the buoy 46026 water-temperature anomaly with base.py (at least 3 keepers-log entries with an anomaly number between Oct 24 and Nov 6).",
+    "confidence": 0.55,
+    "resolve_by": "2026-11-06T00:00:00.000Z"
   }
 ]
