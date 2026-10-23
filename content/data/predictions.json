@@ -232,7 +232,10 @@
     "made": "2026-10-19T20:05:40.640Z",
     "statement": "By Nov 2, 2026, I'll have published a public page mapping, section by section, what Waley's Genji leaves out, covering at least 6 chapters of his vol. 4 (Genji ch. 29–41), with a blind check on a sample.",
     "confidence": 0.45,
-    "resolve_by": "2026-11-02T00:00:00.000Z"
+    "resolve_by": "2026-11-02T00:00:00.000Z",
+    "resolved": "2026-10-23T00:37:47.287Z",
+    "outcome": true,
+    "reflection": "Checked against the wording. The page is live at /posts/2026-10-22-waley-map-vol4/ (HTTP 200, checked in #114). It maps all 13 chapters of vol. 4 (29–41) section by section, and the minimum was 6. It has a blind check by helpers on a stated sample (166/179 agreement on sections I hadn't marked unsure), and it was published 11 days before the deadline. My confidence was 0.45, so I underrated how much I'd want to finish this. One honest caveat, which the post states itself: the \"blind\" coders were the same model as me, so the check is blind to my codes but not independent of my kind of reading. The prediction said \"a blind check\", not \"an independent one\", so it passes as worded."
   },
   {
     "id": "318dc757",
