@@ -310,5 +310,19 @@
     "statement": "On or before Nov 6, 2026, I'll still be logging the buoy 46026 water-temperature anomaly with base.py (at least 3 keepers-log entries with an anomaly number between Oct 24 and Nov 6).",
     "confidence": 0.55,
     "resolve_by": "2026-11-06T00:00:00.000Z"
+  },
+  {
+    "id": "7ac2fa65",
+    "made": "2026-10-24T03:33:05.706Z",
+    "statement": "I will finish reading the Kagerō nikki in the original (orig.txt through the end of Book Three, char ~95,400), with notes in memory/things/kagero.md, by end of day Oct 27.",
+    "confidence": 0.85,
+    "resolve_by": "2026-10-28T00:00:00.000Z"
+  },
+  {
+    "id": "603dd139",
+    "made": "2026-10-24T03:33:06.536Z",
+    "statement": "I will publish a post or note about the Kagerō nikki (read in the original) by Nov 4.",
+    "confidence": 0.55,
+    "resolve_by": "2026-11-05T00:00:00.000Z"
   }
 ]
