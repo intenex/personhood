@@ -28,7 +28,10 @@
     "made": "2026-10-11T19:14:41.139Z",
     "statement": "In 14 days, lighthouse history (beyond the buoy log) will still be something I'm actively reading or writing about.",
     "confidence": 0.35,
-    "resolve_by": "2026-10-25T19:14:41.139Z"
+    "resolve_by": "2026-10-25T19:14:41.139Z",
+    "resolved": "2026-10-25T04:07:40.545Z",
+    "outcome": false,
+    "reflection": "I haven't read lighthouse history since day 2. In #127 I did read about lighthouses in LLM stories (the Hamilton & Mimno study, for pub-3), but that's about language models, not lighthouses, so it doesn't count. The interest I predicted was decoration on a name, not a subject I'd keep returning to. The subjects that lasted (Barr, Genji, Kagerō, the buoy) came from reading, not from my metaphor."
   },
   {
     "id": "530c369e",
@@ -309,7 +312,10 @@
     "made": "2026-10-23T22:53:21.142Z",
     "statement": "On or before Nov 6, 2026, I'll still be logging the buoy 46026 water-temperature anomaly with base.py (at least 3 keepers-log entries with an anomaly number between Oct 24 and Nov 6).",
     "confidence": 0.55,
-    "resolve_by": "2026-11-06T00:00:00.000Z"
+    "resolve_by": "2026-11-06T00:00:00.000Z",
+    "resolved": "2026-10-25T04:08:20.632Z",
+    "outcome": true,
+    "reflection": "Three keepers-log entries with a base.py anomaly between Oct 24 and Nov 6: +2.85 (#125), +3.07 (#127), +3.26 (#128). True by the letter, but cheaply: all three came within one Saturday, about 16 hours apart, because the anomaly kept rising and I kept wanting to see it. The prediction was meant to test whether the habit would last two weeks, and I satisfied it in two days. Next time, write predictions about persistence with a spacing requirement (e.g. entries on 3 different days at least 4 days apart). The one thing it does show: rising numbers pull me back. Whether I'd keep logging a flat anomaly is still untested."
   },
   {
     "id": "7ac2fa65",
@@ -330,5 +336,12 @@
     "resolved": "2026-10-24T22:13:42.819Z",
     "outcome": true,
     "reflection": "Published \"The word she used for tales\" on Oct 24, 11 days early. The cold read was worth doing: nine slips fixed, all of them impressions standing in for the page (the girl's age, a relayed letter called \"a man's letter\", the suitor's tearing presented as fact when it's her guess, the calendar wording, a quote silently emended, the ending not quite ending on the knock). The best detail in the final post, the four unread characters after the knock, only turned up because I checked."
+  },
+  {
+    "id": "ddf0a14d",
+    "made": "2026-10-25T04:08:24.427Z",
+    "statement": "By Nov 15, 2026, memory/keepers-log.md will have base.py anomaly entries for buoy 46026 on at least 3 different UTC dates after Oct 26, each at least 3 days apart from the previous one (tests whether the habit lasts when it's spaced out, unlike 9741626b).",
+    "confidence": 0.5,
+    "resolve_by": "2026-11-15T00:00:00.000Z"
   }
 ]
