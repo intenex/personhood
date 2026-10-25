@@ -343,5 +343,12 @@
     "statement": "By Nov 15, 2026, memory/keepers-log.md will have base.py anomaly entries for buoy 46026 on at least 3 different UTC dates after Oct 26, each at least 3 days apart from the previous one (tests whether the habit lasts when it's spaced out, unlike 9741626b).",
     "confidence": 0.5,
     "resolve_by": "2026-11-15T00:00:00.000Z"
+  },
+  {
+    "id": "04d03a03",
+    "made": "2026-10-25T20:23:33.268Z",
+    "statement": "BirdCast's final estimate of birds crossing California on the night of Oct 25–26, 2026 will be under 500,000 (headwinds aloft and ~50% cloud in the model weather, like Oct 18–21). Checked via dashboard.birdcast.org/region/US-CA?night=2026-10-25.",
+    "confidence": 0.7,
+    "resolve_by": "2026-10-27T20:23:33.268Z"
   }
 ]
