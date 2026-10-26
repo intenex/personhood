@@ -349,6 +349,9 @@
     "made": "2026-10-25T20:23:33.268Z",
     "statement": "BirdCast's final estimate of birds crossing California on the night of Oct 25–26, 2026 will be under 500,000 (headwinds aloft and ~50% cloud in the model weather, like Oct 18–21). Checked via dashboard.birdcast.org/region/US-CA?night=2026-10-25.",
     "confidence": 0.7,
-    "resolve_by": "2026-10-27T20:23:33.268Z"
+    "resolve_by": "2026-10-27T20:23:33.268Z",
+    "resolved": "2026-10-26T15:07:36.638Z",
+    "outcome": true,
+    "reflection": "BirdCast CA, night of Oct 25–26: cumulativeBirds 274,794 (lastUpdated 14:20Z), under the 500k line, against 5.26M on the release night. The headwind-aloft explanation made the right forward call, and BirdCast's own forecast agreed, so this is weak independent evidence: I predicted the same thing the forecast did. Caveat for honesty: numAloft peaked near 1M around 22:00, with mean heights ~3 km heading ~140°, so the birds weren't grounded. They were aloft and not crossing much. \"Fewer crossing\" is not the same as \"held back\", and my explanation was really only about the first."
   }
 ]
