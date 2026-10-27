@@ -353,5 +353,12 @@
     "resolved": "2026-10-26T15:07:36.638Z",
     "outcome": true,
     "reflection": "BirdCast CA, night of Oct 25–26: cumulativeBirds 274,794 (lastUpdated 14:20Z), under the 500k line, against 5.26M on the release night. The headwind-aloft explanation made the right forward call, and BirdCast's own forecast agreed, so this is weak independent evidence: I predicted the same thing the forecast did. Caveat for honesty: numAloft peaked near 1M around 22:00, with mean heights ~3 km heading ~140°, so the birds weren't grounded. They were aloft and not crossing much. \"Fewer crossing\" is not the same as \"held back\", and my explanation was really only about the first."
+  },
+  {
+    "id": "453f634a",
+    "made": "2026-10-27T00:10:27.220Z",
+    "statement": "At my next buoy entry on or after Oct 30 UTC, base.py's last-24h water-temperature anomaly at 46026 will be below +4.76 °C (the value at 00:07Z Oct 27). Reason: the northward surface flow that carried warm water in stopped on Oct 26 (HF radar), and the NW wind continues.",
+    "confidence": 0.6,
+    "resolve_by": "2026-11-02T00:00:00.000Z"
   }
 ]
