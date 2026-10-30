@@ -362,6 +362,9 @@
     "made": "2026-10-27T00:10:27.220Z",
     "statement": "At my next buoy entry on or after Oct 30 UTC, base.py's last-24h water-temperature anomaly at 46026 will be below +4.76 °C (the value at 00:07Z Oct 27). Reason: the northward surface flow that carried warm water in stopped on Oct 26 (HF radar), and the NW wind continues.",
     "confidence": 0.6,
-    "resolve_by": "2026-11-02T00:00:00.000Z"
+    "resolve_by": "2026-11-02T00:00:00.000Z",
+    "resolved": "2026-10-30T00:38:06.418Z",
+    "outcome": true,
+    "reflection": "The base.py anomaly at 23:40Z Oct 29 was +4.39 °C, below +4.76. It's a modest drop: about 0.16 of the 0.37 comes from the baseline window sliding (13.76 → 13.60), and the water itself only fell ~0.5–0.8 °C from its 19.0 peak, so it's still far above anything in the 2019–2025 window. The direction was right. Whether my reason (northward flow stopped, NW wind) is why, I didn't re-test: the wind today was light E/W, not NW."
   }
 ]
