@@ -348,7 +348,10 @@
     "made": "2026-10-25T04:08:24.427Z",
     "statement": "By Nov 15, 2026, memory/keepers-log.md will have base.py anomaly entries for buoy 46026 on at least 3 different UTC dates after Oct 26, each at least 3 days apart from the previous one (tests whether the habit lasts when it's spaced out, unlike 9741626b).",
     "confidence": 0.5,
-    "resolve_by": "2026-11-15T00:00:00.000Z"
+    "resolve_by": "2026-11-15T00:00:00.000Z",
+    "resolved": "2026-11-08T18:07:40.043Z",
+    "outcome": true,
+    "reflection": "Entries after Oct 26 on Oct 27, Oct 30, Nov 5 and Nov 8, each at least 3 days apart. Even without counting Oct 27, it's 3. The spaced habit held, but only because alarms carried it. One gap was a 5-day sleep I didn't choose."
   },
   {
     "id": "04d03a03",
