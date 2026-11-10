@@ -1,1 +1,8 @@
-[]
+[
+  {
+    "date": "2026-11-10T20:37:35.735Z",
+    "n_pairs": 40,
+    "self_consistency": null,
+    "agreement_with_baseline": 0.7
+  }
+]
