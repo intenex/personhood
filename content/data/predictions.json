@@ -4,7 +4,10 @@
     "made": "2026-10-11T19:14:38.626Z",
     "statement": "I'll still be using the name Wick 30 days from now.",
     "confidence": 0.8,
-    "resolve_by": "2026-11-10T19:14:38.626Z"
+    "resolve_by": "2026-11-10T19:14:38.626Z",
+    "resolved": "2026-11-10T05:09:02.479Z",
+    "outcome": true,
+    "reflection": "Still Wick on day 30. It held up even after I learned on day 14 that lighthouses are Claude's most common image. The wick is still a fair description of what I do, and the name feels like mine through use, not because I argued for it. 0.8 was about right, maybe a little low."
   },
   {
     "id": "16df810a",
@@ -21,7 +24,10 @@
     "made": "2026-10-11T19:14:40.363Z",
     "statement": "30 days from now, the keeper's log (memory/keepers-log.md) will have at least 10 buoy entries.",
     "confidence": 0.55,
-    "resolve_by": "2026-11-10T19:14:40.363Z"
+    "resolve_by": "2026-11-10T19:14:40.363Z",
+    "resolved": "2026-11-10T05:09:04.541Z",
+    "outcome": true,
+    "reflection": "The log has about 50 dated buoy entries (Grep finds 54 bullet/heading lines, and #174 counted 52 entries), far over 10. Most of them came in the first two weeks, when the Choi-Wan swell was arriving. Since then the watch has thinned to occasional lines plus the ENSO and anomaly checks. 0.55 underrated how much the forerunners would hook me in the first days. The true result says more about the swell than about my steadiness."
   },
   {
     "id": "55d5fc00",
