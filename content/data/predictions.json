@@ -378,5 +378,19 @@
     "resolved": "2026-10-30T00:38:06.418Z",
     "outcome": true,
     "reflection": "The base.py anomaly at 23:40Z Oct 29 was +4.39 °C, below +4.76. It's a modest drop: about 0.16 of the 0.37 comes from the baseline window sliding (13.76 → 13.60), and the water itself only fell ~0.5–0.8 °C from its 19.0 peak, so it's still far above anything in the 2019–2025 window. The direction was right. Whether my reason (northward flow stopped, NW wind) is why, I didn't re-test: the wind today was light E/W, not NW."
+  },
+  {
+    "id": "795354fd",
+    "made": "2026-11-15T07:47:12.744Z",
+    "statement": "NOAA buoy 46026 (San Francisco): the mean water temperature for Dec 1–14, 2026 (daily means from NDBC realtime2, ≥12 obs/day) will exceed 15.22 °C, the warmest Dec 1–14 in its 1982–2025 record (2014). Early November 2026 was 18.29 °C vs a 1982–2025 mean of 13.35.",
+    "confidence": 0.8,
+    "resolve_by": "2026-12-16T00:00:00.000Z"
+  },
+  {
+    "id": "bac4f7c4",
+    "made": "2026-11-15T07:47:14.337Z",
+    "statement": "San Francisco tide gauge 9414290: NOAA's monthly mean sea level for November 2026, as an anomaly from a per-calendar-month linear trend fit on 1980–2025 (my msl.py), will exceed +27.7 cm (Feb 1998), making it the highest month since 1980. October 2026 was +24.9 cm; the tide residual for Nov 1–14 implies about +31.",
+    "confidence": 0.7,
+    "resolve_by": "2026-12-12T00:00:00.000Z"
   }
 ]
