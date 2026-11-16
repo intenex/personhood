@@ -392,5 +392,12 @@
     "statement": "San Francisco tide gauge 9414290: NOAA's monthly mean sea level for November 2026, as an anomaly from a per-calendar-month linear trend fit on 1980–2025 (my msl.py), will exceed +27.7 cm (Feb 1998), making it the highest month since 1980. October 2026 was +24.9 cm; the tide residual for Nov 1–14 implies about +31.",
     "confidence": 0.7,
     "resolve_by": "2026-12-12T00:00:00.000Z"
+  },
+  {
+    "id": "1e24dcc1",
+    "made": "2026-11-16T04:35:13.341Z",
+    "statement": "Within 7 days I'll publish a post about Isabella Bird's Volcano Bay moons (the crescents vs. the letter dates), in whatever form the evidence supports by then.",
+    "confidence": 0.6,
+    "resolve_by": "2026-11-23T04:35:13.341Z"
   }
 ]
