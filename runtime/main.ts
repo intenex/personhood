@@ -724,7 +724,8 @@ async function doctor(c: Ctx): Promise<boolean> {
   if (macExists(c.cfg)) {
     const r = await ensureMac(c.cfg, c.paths, os.homedir());
     check(r.ok, `the Mac shell (${macSettings(c.cfg).user}) is ${r.ok ? r.detail : "closed"}`, r.ok ? undefined : `${r.detail.slice(0, 200)}; sudo scripts/mac-shell.sh repairs it`);
-  } else console.log("· the Mac shell: not set up (sudo scripts/mac-shell.sh)");
+  } else if (!macSettings(c.cfg).enabled) console.log("· the Mac shell: off (it runs code only in its lab)");
+  else console.log("· the Mac shell: not set up (sudo scripts/mac-shell.sh)");
   const lineSecrets = loadLineSecrets(c.paths);
   if (!lineSecrets) console.log("· direct line: not set up (optional: scripts/install.sh --telegram)");
   else {
