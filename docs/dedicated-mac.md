@@ -165,6 +165,10 @@ git -C ~/personhood/body remote set-url origin https://github.com/intenex/person
 git -C ~/personhood/mind remote set-url origin https://github.com/rocksandpeanuts/personhood-mind.git
 ```
 
+## Moving it to another Mac
+
+Everything comes along (its secrets, the lab, the Mac shell's files) in one encrypted image: [Moving the agent to another Mac](moving.md).
+
 ## Once a year
 
 The Claude token expires roughly a year after setup (`doctor` starts warning after 330 days). Put a reminder in your calendar for eleven months from now and renew it with `install.sh --token` (see "A token expired" above). GitHub's browser login doesn't expire.
