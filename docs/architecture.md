@@ -53,6 +53,8 @@ The `screen` life tool works like computer use: `screenshot`, `left_click`/`righ
 
 ## The Mac shell
 
+Off (`"mac": {"enabled": false}`) since November 2026, when the agent was to move to a Mac Ben also uses; the code stays for a Mac that's the agent's alone. What it was:
+
 A standard macOS account of the agent's own on the Mac itself (runtime/mac.ts), `wick` by default, created by `sudo scripts/mac-shell.sh`: not an administrator, hidden from the login window, with a random password nobody keeps. The `mac_run` life tool has the same shape, caps and timeouts as `run` (300 commands per waking, 2 minutes by default, at most 15) and is never in correspondence wakings.
 
 - **How it runs:** the life server runs `sudo -n -u wick -H /usr/bin/env -i … /bin/bash --noprofile --norc -c <wrapper>`. A sudoers rule (`/etc/sudoers.d/personhood-wick`) lets the harness account do that, and nothing else, without a password; `wick` has no sudo at all. The script, with any credentials, comes base64-encoded on the first line of stdin (never in argv, where `ps` would show it); the wrapper decodes it to a private temp file and runs it as a login shell in `~` under a perl timeout that ends the whole process group (macOS has no `timeout`). The rest of stdin goes to the command.

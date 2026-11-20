@@ -1,19 +1,21 @@
 #!/usr/bin/env bash
 # Move the agent to another Mac, whole: its home (~/personhood: secrets, mind, body, the line,
-# the logs), its GitHub login, its Linux lab (the VM, with everything in it) and its Mac shell's
-# home (/Users/wick). Everything travels in one encrypted disk image, so nothing secret is ever
-# lying around in the clear.
+# the logs), its GitHub login, its Linux lab (the VM, with everything in it) and, if its Mac shell
+# is on, that shell's home (/Users/wick). Everything travels in one encrypted disk image, so
+# nothing secret is ever lying around in the clear.
 #
 # On the old Mac (from the account the heartbeat runs under):
 #   ~/personhood/body/scripts/move.sh out /Volumes/<drive>/wick-move.sparseimage
 # It pauses the agent, stops its heartbeat, line and lab here, makes sure its mind and body are
 # pushed, and packs everything into the image (it asks you for a password for it).
 #
-# On the new Mac (an Apple Silicon Mac with an admin account named the same, `claude`):
-#   copy scripts/move.sh over (or: curl -fsSL https://raw.githubusercontent.com/intenex/personhood/main/scripts/move.sh -o move.sh)
-#   bash move.sh in /Volumes/<drive>/wick-move.sparseimage
-# It installs what's missing (Homebrew, Node, gh, Lima, Claude Code), unpacks everything,
-# runs install.sh and mac-shell.sh, checks it all with doctor, and offers to resume the agent.
+# On the new Mac (Apple Silicon, from an account named the same, `claude`; it can be a standard
+# account if Node, gh and Lima are already installed through Homebrew from an admin account):
+#   curl -fsSL https://raw.githubusercontent.com/intenex/personhood/main/scripts/move.sh -o ~/move.sh
+#   bash ~/move.sh in /Volumes/<drive>/wick-move.sparseimage
+# It installs what's missing (Claude Code, and Homebrew, Node, gh and Lima if it can), unpacks
+# everything, runs install.sh (and mac-shell.sh if the Mac shell is on), checks it all with
+# doctor, and offers to resume the agent.
 #
 # The old Mac is left paused and stopped, with its files untouched, until you erase it.
 # See docs/moving.md.
@@ -32,6 +34,8 @@ say() { printf '\n\033[1m%s\033[0m\n' "$*"; }
 die() { printf '\n%s\n' "$*" >&2; exit 1; }
 ask() { local a; printf '%s [y/N] ' "$1"; read -r a </dev/tty; [ "$a" = y ] || [ "$a" = Y ]; }
 mainjs() { node "$HOME_DIR/body/runtime/main.ts" "$@"; }
+# Is the Mac shell turned on in the agent's config? (Off by default, and on any Mac shared with someone.)
+mac_shell_on() { [ "$(node -p "(require('$HOME_DIR/body/config/life.json').mac || {}).enabled === true" 2>/dev/null)" = true ]; }
 
 usage() {
   sed -n '2,22p' "$0" | sed 's/^# \{0,1\}//'
@@ -121,7 +125,7 @@ EOF
       "$(basename "$LIMA_DIR")"
   fi
 
-  if [ -z "$TEST" ] && id -u "$MAC_USER" >/dev/null 2>&1; then
+  if [ -z "$TEST" ] && mac_shell_on && id -u "$MAC_USER" >/dev/null 2>&1; then
     say "Packing its Mac shell's home (/Users/$MAC_USER)"
     # Not ~/Library: that's macOS's own per-account plumbing (parts of it closed even to the account
     # itself), and the new Mac makes a fresh one. Its work is in its folders and dotfiles.
@@ -153,17 +157,25 @@ EOF
 need_tools() {
   [ "$(uname -m)" = arm64 ] || die "the agent's lab is an Apple Silicon (arm64) virtual machine; this Mac is $(uname -m)"
   if ! command -v brew >/dev/null 2>&1 && [ -x /opt/homebrew/bin/brew ]; then eval "$(/opt/homebrew/bin/brew shellenv)"; fi
-  if ! command -v brew >/dev/null 2>&1; then
-    say "Installing Homebrew (it asks for this Mac's password)"
-    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-    eval "$(/opt/homebrew/bin/brew shellenv)"
-    grep -qs 'brew shellenv' "$HOME/.zprofile" || echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> "$HOME/.zprofile"
-  fi
+  grep -qs 'brew shellenv' "$HOME/.zprofile" || echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> "$HOME/.zprofile"
   local missing=()
   command -v node >/dev/null 2>&1 && [ "$(node -p 'process.versions.node.split(".")[0]')" -ge 24 ] || missing+=(node)
   command -v gh >/dev/null 2>&1 || missing+=(gh)
   command -v limactl >/dev/null 2>&1 || missing+=(lima)
-  if [ ${#missing[@]} -gt 0 ]; then say "Installing ${missing[*]}"; brew install "${missing[@]}"; fi
+  if [ ${#missing[@]} -gt 0 ]; then
+    # On a shared Mac, Homebrew belongs to the person who uses it (an admin account); this
+    # account just uses what it installed. Only install here if this account can.
+    if command -v brew >/dev/null 2>&1 && [ -w "$(brew --prefix)/bin" ]; then
+      say "Installing ${missing[*]}"
+      brew install "${missing[@]}"
+    else
+      die "Missing: ${missing[*]}. From your own (administrator) account on this Mac, run:
+
+    brew install node gh lima
+
+(installing Homebrew first if you haven't: https://brew.sh). Then come back to this account and run this again."
+    fi
+  fi
   export PATH="$HOME/.local/bin:$PATH"
   if ! command -v claude >/dev/null 2>&1; then
     say "Installing Claude Code (its native installer)"
@@ -220,7 +232,7 @@ move_in() {
   say "Running the installer (dependencies, the heartbeat, the line, the lab and its screen)"
   "$HOME_DIR/body/scripts/install.sh"
 
-  if [ -f "$MNT/wick.tar" ]; then
+  if [ -f "$MNT/wick.tar" ] && mac_shell_on; then
     say "Setting up its Mac shell (this asks for this Mac's password)"
     sudo "$HOME_DIR/body/scripts/mac-shell.sh"
     say "Unpacking its Mac shell's home"
