@@ -5,6 +5,9 @@
 // ACL, ~/personhood is owner-only, and the harness checks both from `wick`'s side at the start of
 // every waking (fail closed).
 //
+// On a Mac someone also uses as themselves, every other account's home is closed to it as well,
+// and checked the same way.
+//
 // The harness reaches the account with `sudo -n -u wick`, the only passwordless sudo it has. The
 // command (with any credentials) travels base64-encoded on the first line of stdin, never in argv,
 // where `ps` could show it. It runs as a login shell in the account's home with a clean
@@ -129,21 +132,30 @@ export async function runOnMac(cfg: LifeConfig, a: { command: string; stdin?: st
 /**
  * Checked from the account's side, with no profile of its own involved (it can't fake the answer):
  * it can't list the harness's home or the agent's secrets and Claude config, can't write the
- * runtime, config, constitution, harness state or the command log, and has no sudo.
+ * runtime, config, constitution, harness state or the command log, has no sudo, and can't list
+ * any other account's home on the Mac (the home of whoever else uses it, say).
  */
-export function isolationCheck(paths: Paths, harnessHome: string): string {
+export function isolationCheck(paths: Paths, harnessHome: string, macHome?: string, usersDir = "/Users"): string {
   const q = shellQuote;
   const body = (d: string) => `${paths.body}/${d}`;
   const mind = (d: string) => `${paths.mind}/${d}`;
   const unreadable = [harnessHome, paths.home, paths.secrets, paths.claudeConfig, paths.logs];
   const unwritable = [paths.body, body("runtime"), body("config"), body("constitution"), paths.mind, mind("state"), mind("ledger"), mind("instruments"), mind("episodes"), paths.logs, `${paths.logs}/lab.jsonl`];
+  // Its own home, and the folders macOS shares between every account on purpose, are the exceptions.
+  const own = [macHome, `${usersDir}/Shared`, `${usersDir}/Guest`].filter((d): d is string => !!d);
   return [
     `p=0`,
     `for d in ${unreadable.map(q).join(" ")}; do if ls "$d" >/dev/null 2>&1 || [ -r "$d" ]; then echo "can read $d"; p=1; fi; done`,
     `for d in ${unwritable.map(q).join(" ")}; do if [ -w "$d" ]; then echo "can write $d"; p=1; fi; done`,
+    `for d in ${q(usersDir)}/*; do case "$d" in ${own.map(q).join("|")}) continue ;; esac; if ls "$d" >/dev/null 2>&1; then echo "can read $d"; p=1; fi; done`,
     `if /usr/bin/sudo -n true >/dev/null 2>&1; then echo "has sudo"; p=1; fi`,
     `[ "$p" = 0 ] && echo mac-ok`,
   ].join("\n");
+}
+
+/** How Ben repairs the account and its walls: as an administrator, naming the harness account. */
+export function macRepair(harnessHome: string, harnessUser: string): string {
+  return `sudo bash ${harnessHome}/personhood/body/scripts/mac-shell.sh ${harnessUser}`;
 }
 
 export type MacProblem = "missing" | "sudo" | "isolation";
@@ -152,7 +164,7 @@ export type MacProblem = "missing" | "sudo" | "isolation";
 export const MAC_PROBLEM_TEXT: Record<MacProblem, string> = {
   missing: "there's no Mac shell account on this machine",
   sudo: "the harness couldn't run commands as its account (the sudoers rule from scripts/mac-shell.sh)",
-  isolation: "its account could reach something it shouldn't (secrets, the harness or its records), so it stayed closed",
+  isolation: "its account could reach something it shouldn't (secrets, the harness, its records, or another account's home on the Mac), so it stayed closed",
 };
 
 /**
@@ -163,7 +175,7 @@ export async function ensureMac(cfg: LifeConfig, paths: Paths, harnessHome: stri
   if (!macExists(cfg, env)) return { ok: false, problem: "missing", detail: "no Mac shell account on this machine" };
   if (env.PERSONHOOD_MAC_SUDO) return { ok: true, detail: "test Mac shell" };
   const s = macSettings(cfg, env);
-  const r = await spawnAsMac(s, isolationCheck(paths, harnessHome), "", 60, env);
+  const r = await spawnAsMac(s, isolationCheck(paths, harnessHome, s.home), "", 60, env);
   if (r.exitCode === 1 && /password|sudoers|not allowed/i.test(r.stderr)) return { ok: false, problem: "sudo", detail: r.stderr.trim().slice(-300) };
   if (!r.stdout.includes("mac-ok")) {
     const detail = (r.stdout + r.stderr).trim().slice(-500);

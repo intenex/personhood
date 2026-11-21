@@ -28,7 +28,7 @@ import { describeResources, Ledger } from "./ledger.ts";
 import { markPresented, syncLetters, unreadLetters } from "./letters.ts";
 import { ensureLab, LAB_PROBLEM_TEXT, labEnv, labExists } from "./lab.ts";
 import { ensureScreen } from "./screen.ts";
-import { ensureMac, MAC_PROBLEM_TEXT, macEnv, macExists, macSettings } from "./mac.ts";
+import { ensureMac, MAC_PROBLEM_TEXT, macEnv, macExists, macRepair, macSettings } from "./mac.ts";
 import { describePlan, loadPlan, recordPlan } from "./plan.ts";
 import { HELP_TEXT, Line, type LineEvent, loadLineSecrets, pair, renderConversation } from "./line.ts";
 import { sessionActions, type Session, type SleepRecord } from "./life-tools.ts";
@@ -284,7 +284,7 @@ export async function wake(c: Ctx, decision: Decision): Promise<void> {
     mac = r.ok;
     if (!r.ok) {
       log(`mac shell: ${r.detail}`);
-      await alertBen(c, "mac", "My Mac shell stayed closed this waking", `The harness checked my Mac shell (the ${macSettings(cfg).user} account) before waking me and kept it closed: ${MAC_PROBLEM_TEXT[r.problem ?? "sudo"]}. The details are in ~/personhood/logs/heartbeat.log on the Mac, and \`doctor\` runs the same check; \`sudo scripts/mac-shell.sh\` repairs the account and its permissions.`);
+      await alertBen(c, "mac", "My Mac shell stayed closed this waking", `The harness checked my Mac shell (the ${macSettings(cfg).user} account) before waking me and kept it closed: ${MAC_PROBLEM_TEXT[r.problem ?? "sudo"]}. The details are in ~/personhood/logs/heartbeat.log on the Mac, and \`doctor\` runs the same check; from an administrator account, \`${macRepair(os.homedir(), os.userInfo().username)}\` repairs the account and its walls.`);
     }
   }
   const session: Session = { waking, mode: decision.mode, startedAt: start.toISOString(), effort: decision.effort, dir: sessionDir, lab, mac, screen };
@@ -723,9 +723,9 @@ async function doctor(c: Ctx): Promise<boolean> {
   } else console.log("· the lab: not set up (scripts/install.sh --lab)");
   if (macExists(c.cfg)) {
     const r = await ensureMac(c.cfg, c.paths, os.homedir());
-    check(r.ok, `the Mac shell (${macSettings(c.cfg).user}) is ${r.ok ? r.detail : "closed"}`, r.ok ? undefined : `${r.detail.slice(0, 200)}; sudo scripts/mac-shell.sh repairs it`);
+    check(r.ok, `the Mac shell (${macSettings(c.cfg).user}) is ${r.ok ? r.detail : "closed"}`, r.ok ? undefined : `${r.detail.slice(0, 200)}; repair it from an administrator account with ${macRepair(os.homedir(), os.userInfo().username)}`);
   } else if (!macSettings(c.cfg).enabled) console.log("· the Mac shell: off (it runs code only in its lab)");
-  else console.log("· the Mac shell: not set up (sudo scripts/mac-shell.sh)");
+  else console.log(`· the Mac shell: not set up (from an administrator account: ${macRepair(os.homedir(), os.userInfo().username)})`);
   const lineSecrets = loadLineSecrets(c.paths);
   if (!lineSecrets) console.log("· direct line: not set up (optional: scripts/install.sh --telegram)");
   else {

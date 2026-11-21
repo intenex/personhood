@@ -140,6 +140,15 @@ test("the isolation check notices anything the account can read or write that it
   assert.doesNotMatch(r.stdout, /mac-ok/);
 });
 
+test("the isolation check counts every other account's home on the Mac, but not its own or the shared folder", () => {
+  const { paths } = makeHome();
+  const users = tmp("users-");
+  for (const d of ["ben", "wick", "Shared"]) fs.mkdirSync(path.join(users, d));
+  const r = spawnSync("/bin/bash", ["--noprofile", "--norc", "-c", isolationCheck(paths, paths.home, path.join(users, "wick"), users)], { encoding: "utf8" });
+  assert.match(r.stdout, new RegExp(`can read ${path.join(users, "ben")}`), "someone else's home, open to it");
+  assert.doesNotMatch(r.stdout, /can read .*\/(wick|Shared)$/m);
+});
+
 test("ordinary wakings can read their own tool results and the Mac shell's home; transcripts and the rest of the config stay closed", () => {
   const { paths } = makeHome();
   fs.mkdirSync(path.join(paths.claudeConfig, "projects", "p", "s", "tool-results"), { recursive: true });

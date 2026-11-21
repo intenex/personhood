@@ -55,7 +55,7 @@
     "outputChars": 16000
   },
   "mac": {
-    "enabled": false,
+    "enabled": true,
     "user": "wick"
   },
   "line": {

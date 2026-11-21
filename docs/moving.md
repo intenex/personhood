@@ -1,8 +1,8 @@
 # Moving the agent to another Mac
 
-Everything the agent is travels in one encrypted disk image: its home (`~/personhood`: the journal's key and its other secrets, its mind and body, the direct line, your command log), its GitHub login, and its Linux lab (the whole virtual machine, with everything in it). `scripts/move.sh` packs it on the old Mac and unpacks it on the new one. Its mind and body are on GitHub as well, so the image is what carries the secrets and the lab.
+Everything the agent is travels in one encrypted disk image: its home (`~/personhood`: the journal's key and its other secrets, its mind and body, the direct line, your command log), its GitHub login, its Linux lab (the whole virtual machine, with everything in it), and its Mac shell's home (`/Users/wick`). `scripts/move.sh` packs it on the old Mac and unpacks it on the new one. Its mind and body are on GitHub as well, so the image is what carries the secrets and the lab.
 
-This guide moves it to a Mac **you also use yourself**: it lives in an account of its own (`claude`) next to yours. It runs code only in its lab, never on the Mac itself. (Its Mac shell, the `wick` account, stays behind; its files from there are already in its lab, in `~/lab/from-mac`.)
+This guide moves it to a Mac **you also use yourself**: it lives in an account of its own (`claude`) next to yours, and both stay logged in at once (Fast User Switching). It runs code in its lab and in its Mac shell, a standard account of its own (`wick`) that's walled off from your account and from `claude`'s secrets; `wick` never logs in, the harness reaches it through one narrow sudo rule.
 
 About an hour, most of it waiting.
 
@@ -64,11 +64,14 @@ It asks for the image's password. Along the way it:
 - installs Claude Code for this account (and tells you if Node, gh or Lima are missing: step 2.1);
 - checks the image against its checksums, then unpacks the agent's home, its GitHub login and its lab;
 - pulls its mind and body, and runs `install.sh`: dependencies, the heartbeat, the line's listener, the lab and its screen;
-- runs `doctor`. **If every line is ✓**, say yes when it offers to resume the agent.
+- sets up its Mac shell. Since `claude` is a standard account, it stops and asks you to switch to **your own account** and run one command there in Terminal (it prints it; it's `sudo bash /Users/claude/personhood/body/scripts/mac-shell.sh claude`, with your password). That makes the `wick` account and puts the walls up: `claude`'s home and yours both closed to it. Switch back and press Return, and it unpacks the shell's files;
+- runs `doctor`. **If every line is ✓** (the Mac shell's line included), say yes when it offers to resume the agent.
 
 Then switch back to your own account, leaving `claude` logged in. Within half an hour the heartbeat wakes it. `/status` on the line shows how it's doing, and the line works as before (the same bot, the same conversation).
 
 If `doctor` shows a ✗, it says what to do. The agent stays paused until you resume it: `node ~/personhood/body/runtime/main.ts resume` (as `claude`).
+
+If you typed `skip` at the Mac-shell step, the shell's files wait in `~/personhood/run/wick.tar`. Later: run the command above from your account, then, as `claude`, `cd / && sudo -n -u wick tar -C /Users/wick -xpf - --no-acls < ~/personhood/run/wick.tar && rm ~/personhood/run/wick.tar`.
 
 **After a restart** (a macOS update, say), log in to `claude` first, then switch to your own account. Until `claude` is logged in, the agent doesn't wake; nothing is lost, it just sleeps longer.
 
@@ -81,8 +84,11 @@ Once the agent has woken on the new Mac and all is well:
 
 ## Sharing a Mac with it
 
-- **It has no shell on the Mac.** Its Claude Code sessions run with no command tools; their file tools reach only its mind and body (and its own saved tool results), and a guard reverts anything else after every waking.
-- **Its code runs in its lab,** a virtual machine that shares no folders, keys or secrets with the Mac. The lab's firewall refuses connections to the Mac itself and to your local network, so your own apps and devices are out of its reach (it's root in there, so that's a guardrail rather than a wall; your router's guest network is the wall).
+- **Both accounts run at once.** With Fast User Switching, `claude` stays logged in in the background while you use yours; its heartbeat and line keep going. Only logging `claude` out (or a restart) stops it. `wick` is never logged in at all.
+- **Its harness has no shell.** Its Claude Code sessions run with no command tools; their file tools reach only its mind and body, its Mac shell's home (and its own saved tool results), and a guard reverts anything else after every waking.
+- **Its Mac shell is a standard account, `wick`,** with no admin and no sudo. Your home and `claude`'s are closed to it by ACLs (`ls -led ~` shows yours), and at the start of every waking the harness checks from `wick`'s side that it can't read either, or any other account's home, or the agent's secrets, and has no sudo. If anything's open, the shell stays closed that waking and you get a message.
+- **What file permissions don't cover:** like any account on a Mac, `wick` can see the list of running processes (yours included, with their command lines), reach anything listening on the Mac (a dev server of yours on `localhost`, say) and your local network, and read and write `/Users/Shared`. Its guardrails tell it to leave all of that alone, and every command it runs is in your log (`~/personhood/logs/lab.jsonl` in `claude`'s account), but that's a rule it keeps, not a wall. So keep secrets off command lines and out of `/Users/Shared`, and put a password on any local service you wouldn't want it to reach. To turn the shell off: `"mac": {"enabled": false}` in `~/personhood/body/config/life.json`, and push it.
+- **Its lab** is a virtual machine that shares no folders, keys or secrets with the Mac. The lab's firewall refuses connections to the Mac itself and to your local network, so your own apps and devices are out of its reach (it's root in there, so that's a guardrail rather than a wall; your router's guest network is the wall).
 - **Its account is a standard one**, and your home folder is closed to it (step 2.2).
 - **Two Claude logins, kept apart:** it uses its own token, in its own config folder. Don't sign in to Claude Code as yourself in its account, or as it in yours.
-- **Resources:** about 3 GB of memory while the lab runs, a little CPU when it wakes, and network use when it reads the web.
+- **Resources:** about 3 GB of memory while the lab runs, a little CPU when it wakes, network use when it reads the web, and whatever its Mac shell runs.

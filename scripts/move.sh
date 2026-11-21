@@ -10,7 +10,8 @@
 # pushed, and packs everything into the image (it asks you for a password for it).
 #
 # On the new Mac (Apple Silicon, from an account named the same, `claude`; it can be a standard
-# account if Node, gh and Lima are already installed through Homebrew from an admin account):
+# account if Node, gh and Lima are already installed through Homebrew from an admin account, and
+# then setting up the Mac shell asks you to run one command from that admin account):
 #   curl -fsSL https://raw.githubusercontent.com/intenex/personhood/main/scripts/move.sh -o ~/move.sh
 #   bash ~/move.sh in /Volumes/<drive>/wick-move.sparseimage
 # It installs what's missing (Claude Code, and Homebrew, Node, gh and Lima if it can), unpacks
@@ -34,7 +35,7 @@ say() { printf '\n\033[1m%s\033[0m\n' "$*"; }
 die() { printf '\n%s\n' "$*" >&2; exit 1; }
 ask() { local a; printf '%s [y/N] ' "$1"; read -r a </dev/tty; [ "$a" = y ] || [ "$a" = Y ]; }
 mainjs() { node "$HOME_DIR/body/runtime/main.ts" "$@"; }
-# Is the Mac shell turned on in the agent's config? (Off by default, and on any Mac shared with someone.)
+# Is the Mac shell turned on in the agent's config?
 mac_shell_on() { [ "$(node -p "(require('$HOME_DIR/body/config/life.json').mac || {}).enabled === true" 2>/dev/null)" = true ]; }
 
 usage() {
@@ -233,11 +234,36 @@ move_in() {
   "$HOME_DIR/body/scripts/install.sh"
 
   if [ -f "$MNT/wick.tar" ] && mac_shell_on; then
-    say "Setting up its Mac shell (this asks for this Mac's password)"
-    sudo "$HOME_DIR/body/scripts/mac-shell.sh"
-    say "Unpacking its Mac shell's home"
-    # As that account, so everything is its own; the home's inherited ACL lets the harness read it.
-    sudo -n -u "$MAC_USER" /usr/bin/tar -C "/Users/$MAC_USER" -xpf - --no-acls < "$MNT/wick.tar"
+    if ! sudo -n -u "$MAC_USER" true 2>/dev/null; then
+      if id -Gn | tr ' ' '\n' | grep -qx admin; then
+        say "Setting up its Mac shell (this asks for this Mac's password)"
+        sudo "$HOME_DIR/body/scripts/mac-shell.sh"
+      else
+        # A standard account (a Mac shared with you): the setup needs an administrator.
+        say "Setting up its Mac shell needs an administrator"
+        cat <<MSG
+Switch to your own account (Fast User Switching, in the menu bar), and in Terminal there run:
+
+    sudo bash $HOME/personhood/body/scripts/mac-shell.sh $(id -un)
+
+It makes the $MAC_USER account, and walls this account's home, and yours, off from it.
+Then switch back here.
+MSG
+        until sudo -n -u "$MAC_USER" true 2>/dev/null; do
+          printf 'Press Return once it has finished (or type skip to leave the Mac shell for later): '
+          read -r a </dev/tty
+          [ "$a" = skip ] && break
+        done
+      fi
+    fi
+    if sudo -n -u "$MAC_USER" true 2>/dev/null; then
+      say "Unpacking its Mac shell's home"
+      # As that account, so everything is its own; the home's inherited ACL lets the harness read it.
+      ( cd / && sudo -n -u "$MAC_USER" /usr/bin/tar -C "/Users/$MAC_USER" -xpf - --no-acls < "$MNT/wick.tar" )
+    else
+      cp "$MNT/wick.tar" "$HOME_DIR/run/wick.tar" && chmod 600 "$HOME_DIR/run/wick.tar"
+      echo "  Left for later: its Mac shell's files are in $HOME_DIR/run/wick.tar (docs/moving.md says how to finish)."
+    fi
   fi
 
   detach

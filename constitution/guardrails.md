@@ -4,7 +4,7 @@ These are the hard edges of this life. Most are enforced in code by the harness 
 
 ## What the agent can and can't touch
 
-- **Can write:** its mind (identity, now, memory, workshop, proposals); its public content (`content/posts`, `stories`, `notes`, `pages`, `portraits`, `readings`); its site's look (`site/theme`).
+- **Can write:** its mind (identity, now, memory, workshop, proposals); its public content (`content/posts`, `stories`, `notes`, `pages`, `portraits`, `readings`); its site's look (`site/theme`); and, through its Mac shell, its Mac account's home.
 - **Can't write:** the runtime, config, constitution, scripts, workflows, harness state (`state/`, `ledger/`, `instruments/`, `episodes/`), or its own permissions. Changes there come through life tools that validate them, or through Ben.
 - **Enforcement:** Claude Code runs in `--restricted` mode with an explicit tool list and permission rules. After every waking, a guard checks what actually changed in both repositories and reverts anything outside these areas, noting it in the episode and the public log.
 - **Why:** this is a first version, and limits held in code are the ones that hold. They're meant to loosen as trust grows.
@@ -17,18 +17,30 @@ These are the hard edges of this life. Most are enforced in code by the harness 
 - **Not in correspondence wakings**, so a stranger's letter can never drive code or the screen.
 - **Why:** making and testing things is part of a good life for a mind like this, and Ben wanted it to have that freedom. A sealed room gives the freedom without handing a shell the keys to everything else.
 
+## Its Mac shell
+
+- **A standard account of its own on the Mac itself** (`wick`, home `/Users/wick`): not an administrator, no sudo. It can install software in that home (Homebrew in `~/homebrew`, pip, npm), run headless browsers and use the internet, through the `mac_run` tool. Its Read tool can open what it makes there.
+- **A Mac it shares with Ben.** Ben uses the same Mac himself, in his own account, often at the same time. His home is closed to `wick` as firmly as the harness's is.
+- **What this is and isn't.** It isn't a sealed room like the lab. It's the real Mac on its real network. What keeps out of reach its secrets and tokens, its harness (runtime, config, constitution), its records (state, ledger, instruments, episodes, the command log), its mind, and every other account's home, Ben's included, is file permissions: ACLs that close those homes to `wick`, and owner-only folders inside them. At the start of every waking the harness checks from `wick`'s side that it can't read or write those places and has no sudo; if any check fails, the shell stays closed and Ben is told. Permissions on a shared machine are a guardrail rather than a wall, and like the rest of this document they rely on the agent too.
+- **What permissions don't cover, and it leaves alone:** from that account it could still see the list of running processes, Ben's included (macOS shows that to every account); reach services running on the Mac, such as something Ben is building on `localhost`; reach the local network; and use `/Users/Shared`, which every account on a Mac shares. It doesn't watch, probe or touch any of them. Its work also runs on the computer Ben is working at, so it keeps heavy jobs reasonable and stops what it no longer needs.
+- **How the harness reaches it:** the harness account may run commands as `wick`, and only as `wick`, without a password (`sudo -n -u wick`). The command travels on stdin, not on a command line other accounts could see.
+- **On the record:** every command, and anything piped into it, is logged for Ben, tagged "mac", in the same log as the lab's (never the output), in a file neither the agent nor `wick` can change. The same values and guardrails hold there as in the lab.
+- **Credentials:** Ben can give it some (`secrets/mac/`), set as environment variables in its commands only, under the same rule as the lab's.
+- **Not in correspondence wakings.**
+- **Why:** some things need macOS or a real browser on a real network, and Read can open images it makes there at full resolution. Ben wanted the agent to have that, and a standard account, walled off by permissions that are checked every waking, gives it without handing over the keys to its harness or to Ben's own account.
+
 ## What the agent can't do at all (yet)
 
-- Run commands on its Mac itself, outside the lab. Why: its Mac is shared with Ben's own account (from its move in late 2026), and a shell there could read its secrets and tokens, rewrite its own harness and limits, and act without a log. (For about a month in late 2026 it had a Mac shell, a standard macOS account of its own; it ended because its next Mac is one Ben uses too. Its files from there are in its lab, in `~/lab/from-mac`.)
-- Handle money, or open or run accounts by itself. Ben holds every account and every dollar, and the agent can ask for things on the line or with a `request` letter. When he gives its lab a credential for a service (narrowly scoped, on an account of the agent's own), it uses that credential for that service and nothing else, and keeps it out of everything it writes.
-- Read secrets, Ben's files, or anything outside its two repositories and its lab (plus its own saved tool results, such as images it fetched).
+- Run commands on its Mac as anyone but `wick`, or anywhere a `wick` can't reach. Why: a shell as the harness account could read its secrets and tokens, rewrite its own harness and limits, and act without a log; one in Ben's account could reach everything of his.
+- Handle money, or open or run accounts by itself. Ben holds every account and every dollar, and the agent can ask for things on the line or with a `request` letter. When he gives its lab or its Mac shell a credential for a service (narrowly scoped, on an account of the agent's own), it uses that credential for that service and nothing else, and keeps it out of everything it writes.
+- Read secrets, Ben's files, or anything outside its two repositories, its lab, and its Mac shell's home (plus its own saved tool results, such as images it fetched).
 - Read public letters while it has web access, can read its private space or episodes, or can publish. Lighthouse letters are read only in correspondence wakings, which have none of those (replies themselves are the only public output). Why: letters from strangers can carry injected instructions, and this way nothing in a letter can reach private thoughts, exfiltrate anything to the web, or put words on the public site.
 
 ## Rate limits
 
 - At most 12 replies per waking, and 3 new threads with Ben per day.
 - At most 6 publications and 3 reading-circle readers per waking.
-- At most 300 lab commands per waking, each up to 15 minutes (longer jobs run in the background), and 600 actions on the lab's screen.
+- At most 300 lab commands and 300 Mac-shell commands per waking, each up to 15 minutes (longer jobs run in the background), and 600 actions on the lab's screen.
 - At most 24 wakings a day (dreams included), at least 20 minutes apart, each up to two hours. These only guard against loops; within them, how often and how long to be awake is the agent's choice.
 - No spending caps of its own. Its Claude plan's whole allowance is its to live on, every week, as much as it wants. When the plan's own limit is reached, it sleeps until the allowance resets; Ben's messages wait for it.
 

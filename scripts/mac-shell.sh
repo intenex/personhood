@@ -1,15 +1,20 @@
 #!/usr/bin/env bash
 # Give the agent a shell on its Mac: a standard (non-admin) macOS account, `wick` by default, that
-# the mac_run life tool runs commands as. Run it once, as the Mac's admin, from the account the
-# heartbeat runs under:
+# the mac_run life tool runs commands as. Run it once with sudo, naming the account the heartbeat
+# runs under. From that account, if it's an administrator:
 #
 #   sudo ~/personhood/body/scripts/mac-shell.sh
+#
+# or, on a Mac you share with it (its account a standard one), from your own administrator account:
+#
+#   sudo bash /Users/claude/personhood/body/scripts/mac-shell.sh claude
 #
 # It:
 #   - creates the account (hidden from the login window, a random password nobody keeps, not an admin);
 #   - lets the harness account run commands as that account, and only as it, without a password
 #     (/etc/sudoers.d/personhood-<user>); the account itself gets no sudo at all;
 #   - walls the harness account's home off from it with an ACL, and makes ~/personhood owner-only;
+#   - walls every other account's home on the Mac off from it the same way (yours, on a shared Mac);
 #   - lets the harness account read the new account's home (so the agent's Read tool can see what it made);
 #   - installs Homebrew in its home (~/homebrew) and points pip and npm at its home too.
 #
@@ -19,14 +24,15 @@
 set -euo pipefail
 
 MAC_USER="${PERSONHOOD_MAC_USER:-wick}"
-HARNESS="${SUDO_USER:-}"
+HARNESS="${1:-${SUDO_USER:-}}"
 
 say() { printf '\n\033[1m%s\033[0m\n' "$*"; }
 die() { echo "$*" >&2; exit 1; }
 
 [ "$(uname -s)" = Darwin ] || die "this is for macOS"
-[ "$(id -u)" = 0 ] || die "run it with sudo, from the account the heartbeat runs under: sudo $0"
-[ -n "$HARNESS" ] && [ "$HARNESS" != root ] || die "run it with sudo from the harness account (SUDO_USER is empty)"
+[ "$(id -u)" = 0 ] || die "run it with sudo: sudo bash $0 <the account the heartbeat runs under>"
+[ -n "$HARNESS" ] && [ "$HARNESS" != root ] || die "name the account the heartbeat runs under: sudo bash $0 claude"
+id -u "$HARNESS" >/dev/null 2>&1 || die "no account named $HARNESS on this Mac"
 [[ "$MAC_USER" =~ ^[a-z_][a-z0-9_]{0,30}$ ]] || die "bad account name: $MAC_USER"
 [ "$MAC_USER" != "$HARNESS" ] || die "the agent's account must not be the harness account"
 
@@ -81,6 +87,21 @@ for d in secrets secrets/lab secrets/mac claude-config logs run line mind; do
   [ -d "$PERSONHOOD/$d" ] && chmod 700 "$PERSONHOOD/$d"
 done
 
+# Everyone else's home too: on a Mac someone also uses as themselves, theirs is no business of its.
+# (The agent's harness checks this from its side every waking and keeps the shell closed if not.)
+OTHERS=()
+while read -r u uid; do
+  [ "$uid" -ge 500 ] 2>/dev/null || continue
+  [ "$u" = "$MAC_USER" ] || [ "$u" = "$HARNESS" ] && continue
+  h="$(dscl . -read "/Users/$u" NFSHomeDirectory 2>/dev/null | awk '{print $2}')"
+  case "$h" in /Users/?*) [ -d "$h" ] || continue ;; *) continue ;; esac
+  OTHERS+=("$h")
+done < <(dscl . -list /Users UniqueID)
+for h in ${OTHERS[@]+"${OTHERS[@]}"}; do
+  say "Walling $h off from $MAC_USER"
+  ls -led "$h" | grep -q "user:$MAC_USER deny" || chmod +a "$DENY" "$h"
+done
+
 say "Setting up $MAC_USER's home"
 # Owner-only, plus read access for the harness account so the agent's Read tool can see its files.
 chown "$MAC_USER:staff" "$MAC_HOME"
@@ -112,6 +133,7 @@ fail=0
 check() { if eval "$2"; then echo "✓ $1"; else echo "✗ $1"; fail=1; fi; }
 check "$MAC_USER can't read $PERSONHOOD/secrets" "! as_mac 'ls $PERSONHOOD/secrets' >/dev/null 2>&1"
 check "$MAC_USER can't enter $HARNESS_HOME" "! as_mac 'ls $HARNESS_HOME' >/dev/null 2>&1"
+for h in ${OTHERS[@]+"${OTHERS[@]}"}; do check "$MAC_USER can't enter $h" "! as_mac 'ls $h' >/dev/null 2>&1"; done
 check "$MAC_USER can't write $PERSONHOOD/body/runtime" "! as_mac 'touch $PERSONHOOD/body/runtime/.mac-probe' >/dev/null 2>&1"
 check "$MAC_USER has no sudo" "! as_mac 'sudo -n true' >/dev/null 2>&1"
 check "$MAC_USER reaches the internet" "as_mac 'curl -fsS -o /dev/null --max-time 20 https://example.com'"
