@@ -10,7 +10,7 @@
 #   sudo bash /Users/claude/personhood/body/scripts/mac-shell.sh claude
 #
 # It:
-#   - creates the account (hidden from the login window, a random password nobody keeps, not an admin);
+#   - creates the account (hidden from the login window, no password, so nobody can log in; not an admin);
 #   - lets the harness account run commands as that account, and only as it, without a password
 #     (/etc/sudoers.d/personhood-<user>); the account itself gets no sudo at all;
 #   - walls the harness account's home off from it with an ACL, and makes ~/personhood owner-only;
@@ -18,7 +18,7 @@
 #   - lets the harness account read the new account's home (so the agent's Read tool can see what it made);
 #   - installs Homebrew in its home (~/homebrew) and points pip and npm at its home too.
 #
-# Safe to re-run. It never prints a secret. Undo: `sudo sysadminctl -deleteUser wick`,
+# Safe to re-run. It never prints a secret. Undo: `sudo dscl . -delete /Users/wick`, `sudo rm -rf /Users/wick`,
 # `sudo rm /etc/sudoers.d/personhood-wick`, `chmod -a "user:wick deny …" ~` (see `ls -le ~`).
 
 set -euo pipefail
@@ -44,26 +44,35 @@ MAC_HOME="/Users/$MAC_USER"
 PERSONHOOD="${PERSONHOOD_HOME:-$HARNESS_HOME/personhood}"
 [ -d "$PERSONHOOD" ] || die "no $PERSONHOOD; run scripts/install.sh first"
 
-if ! id -u "$MAC_USER" >/dev/null 2>&1; then
+# The account is made directly in the local directory with dscl. (sysadminctl, which this used
+# before, can report success on newer macOS and then roll the account back, leaving none.)
+# No password at all ("*"): nobody can log in with it; the harness reaches it through sudo.
+mac_user_ok() { dscacheutil -flushcache 2>/dev/null || true; id -u "$MAC_USER" >/dev/null 2>&1; }
+if ! mac_user_ok; then
   say "Creating the account $MAC_USER (standard, not an admin)"
-  # Nobody ever logs in with it; the harness reaches it through sudo. The password is thrown away.
-  sysadminctl -addUser "$MAC_USER" -fullName "Wick (the agent's shell)" -shell /bin/bash -home "$MAC_HOME" \
-    -password "$(openssl rand -base64 36)" 2>&1 | grep -v -i password || true
-  id -u "$MAC_USER" >/dev/null 2>&1 || die "couldn't create $MAC_USER"
-  dscl . -create "/Users/$MAC_USER" IsHidden 1
+  REC="/Users/$MAC_USER"
+  uid="$(dscl . -read "$REC" UniqueID 2>/dev/null | awk '{print $2}' || true)"
+  if [ -z "$uid" ]; then
+    uid="$(dscl . -list /Users UniqueID | awk '$2 >= 501 && $2 < 1000 {print $2}' | sort -n | tail -1 || true)"
+    uid=$(( ${uid:-500} + 1 ))
+    while dscl . -search /Users UniqueID "$uid" | grep -q .; do uid=$(( uid + 1 )); done
+  fi
+  dscl . -create "$REC"
+  dscl . -create "$REC" RealName "Wick (the agent's shell)"
+  dscl . -create "$REC" UniqueID "$uid"
+  dscl . -create "$REC" PrimaryGroupID 20
+  dscl . -create "$REC" UserShell /bin/bash
+  dscl . -create "$REC" NFSHomeDirectory "$MAC_HOME"
+  dscl . -create "$REC" Password '*'
+  dscl . -create "$REC" IsHidden 1
+  for _ in 1 2 3 4 5 6 7 8 9 10; do mac_user_ok && break; sleep 1; done
+  mac_user_ok || die "couldn't create the account $MAC_USER (dscl . -read $REC shows what's there)"
 fi
-# Newer macOS makes an account's home folder only at its first login, and nobody ever logs in to
-# this one. So: createhomedir if it works, and otherwise make the folder by hand (an empty home is
-# all it needs; macOS fills in ~/Library as it's used).
-[ "$(dscl . -read "/Users/$MAC_USER" NFSHomeDirectory 2>/dev/null | awk '{print $2}')" = "$MAC_HOME" ] \
+[ "$(dscl . -read "/Users/$MAC_USER" NFSHomeDirectory 2>/dev/null | awk '{print $2}' || true)" = "$MAC_HOME" ] \
   || dscl . -create "/Users/$MAC_USER" NFSHomeDirectory "$MAC_HOME"
-[ -d "$MAC_HOME" ] || createhomedir -c -u "$MAC_USER" >/dev/null 2>&1 || true
-if [ ! -d "$MAC_HOME" ]; then
-  mkdir "$MAC_HOME"
-  chown "$MAC_USER:staff" "$MAC_HOME"
-  chmod 700 "$MAC_HOME"
-fi
-[ -d "$MAC_HOME" ] || die "no home folder for $MAC_USER, and couldn't make one at $MAC_HOME"
+# Its home: an empty folder is all it needs (macOS fills in ~/Library as it's used). Ownership and
+# permissions are set below, also when a folder was left there by an earlier try.
+[ -d "$MAC_HOME" ] || mkdir "$MAC_HOME"
 
 # Never an administrator, and no sudo of its own.
 for g in admin wheel _developer _lpadmin com.apple.access_ssh com.apple.access_screensharing; do
@@ -114,7 +123,7 @@ done
 
 say "Setting up $MAC_USER's home"
 # Owner-only, plus read access for the harness account so the agent's Read tool can see its files.
-chown "$MAC_USER:staff" "$MAC_HOME"
+chown "$(id -u "$MAC_USER"):20" "$MAC_HOME"
 chmod 700 "$MAC_HOME"
 ALLOW="user:$HARNESS allow list,search,read,readattr,readextattr,readsecurity,file_inherit,directory_inherit"
 ls -led "$MAC_HOME" | grep -q "user:$HARNESS allow" || find "$MAC_HOME" -xdev -exec chmod +a "$ALLOW" {} + 2>/dev/null || true
