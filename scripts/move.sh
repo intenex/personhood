@@ -59,8 +59,11 @@ detach() { [ -n "$MNT" ] && hdiutil detach -quiet "$MNT" 2>/dev/null || true; }
 trap detach EXIT
 
 attach() {
+  # Ownership off: the files belong to whoever opens the image. The new Mac's `claude` account
+  # often has a different number than the old one's (an account made before it takes 501), and
+  # then owner-only files in the image, like the GitHub token, would be unreadable.
   MNT="$(mktemp -d "${TMPDIR:-/tmp}/wick-move.XXXXXX")"
-  hdi attach -quiet -nobrowse -owners on -mountpoint "$MNT" "$IMAGE" || die "couldn't open $IMAGE (wrong password?)"
+  hdi attach -quiet -nobrowse -owners off -mountpoint "$MNT" "$IMAGE" || die "couldn't open $IMAGE (wrong password?)"
 }
 
 # ---------------------------------------------------------------- out
