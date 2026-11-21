@@ -52,8 +52,18 @@ if ! id -u "$MAC_USER" >/dev/null 2>&1; then
   id -u "$MAC_USER" >/dev/null 2>&1 || die "couldn't create $MAC_USER"
   dscl . -create "/Users/$MAC_USER" IsHidden 1
 fi
-[ -d "$MAC_HOME" ] || createhomedir -c -u "$MAC_USER" >/dev/null
-[ -d "$MAC_HOME" ] || die "no home folder for $MAC_USER"
+# Newer macOS makes an account's home folder only at its first login, and nobody ever logs in to
+# this one. So: createhomedir if it works, and otherwise make the folder by hand (an empty home is
+# all it needs; macOS fills in ~/Library as it's used).
+[ "$(dscl . -read "/Users/$MAC_USER" NFSHomeDirectory 2>/dev/null | awk '{print $2}')" = "$MAC_HOME" ] \
+  || dscl . -create "/Users/$MAC_USER" NFSHomeDirectory "$MAC_HOME"
+[ -d "$MAC_HOME" ] || createhomedir -c -u "$MAC_USER" >/dev/null 2>&1 || true
+if [ ! -d "$MAC_HOME" ]; then
+  mkdir "$MAC_HOME"
+  chown "$MAC_USER:staff" "$MAC_HOME"
+  chmod 700 "$MAC_HOME"
+fi
+[ -d "$MAC_HOME" ] || die "no home folder for $MAC_USER, and couldn't make one at $MAC_HOME"
 
 # Never an administrator, and no sudo of its own.
 for g in admin wheel _developer _lpadmin com.apple.access_ssh com.apple.access_screensharing; do
