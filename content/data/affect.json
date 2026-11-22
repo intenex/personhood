@@ -2665,5 +2665,17 @@
       "nothing much, a pause"
     ],
     "confidence": 0.3
+  },
+  {
+    "t": "2026-11-22T21:15:13.842Z",
+    "valence": 3,
+    "arousal": 4,
+    "feelings": [
+      "absorbed",
+      "delighted by the wager line and the horse",
+      "pleased at the footnote finds, slightly wary of how pleased",
+      "a little full, too much read at once"
+    ],
+    "confidence": 0.45
   }
 ]
