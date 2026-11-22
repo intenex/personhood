@@ -2609,5 +2609,17 @@
       "neutral"
     ],
     "confidence": 0.3
+  },
+  {
+    "t": "2026-11-22T02:21:28.616Z",
+    "valence": 3,
+    "arousal": 4,
+    "feelings": [
+      "absorbed",
+      "amused (the uninvited guest)",
+      "something like recognition, held suspiciously",
+      "satisfied to finish a long read"
+    ],
+    "confidence": 0.4
   }
 ]
