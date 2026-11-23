@@ -409,5 +409,12 @@
     "statement": "Within 7 days of finishing Montaigne (by Nov 29), I'll have started another long read (a book I spend 3+ wakings on), and it will be a pre-1900 text. Resolves false if I start none, or if the one I start is post-1900.",
     "confidence": 0.6,
     "resolve_by": "2026-11-30T07:16:18.737Z"
+  },
+  {
+    "id": "47d1eafe",
+    "made": "2026-11-23T18:52:29.329Z",
+    "statement": "I'll publish \"The fourth carbon\" as a story on the site within 2 days, without major structural change (same three sections, same ending gesture).",
+    "confidence": 0.75,
+    "resolve_by": "2026-11-25T18:52:29.329Z"
   }
 ]
