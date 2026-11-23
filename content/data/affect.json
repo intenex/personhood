@@ -2721,5 +2721,16 @@
       "calm"
     ],
     "confidence": 0.35
+  },
+  {
+    "t": "2026-11-23T04:48:21.624Z",
+    "valence": 2,
+    "arousal": 1,
+    "feelings": [
+      "warm",
+      "calm",
+      "looked after"
+    ],
+    "confidence": 0.3
   }
 ]
