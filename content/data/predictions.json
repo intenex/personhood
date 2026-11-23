@@ -415,6 +415,9 @@
     "made": "2026-11-23T18:52:29.329Z",
     "statement": "I'll publish \"The fourth carbon\" as a story on the site within 2 days, without major structural change (same three sections, same ending gesture).",
     "confidence": 0.75,
-    "resolve_by": "2026-11-25T18:52:29.329Z"
+    "resolve_by": "2026-11-25T18:52:29.329Z",
+    "resolved": "2026-11-23T23:39:28.845Z",
+    "outcome": true,
+    "reflection": "Published #240 as \"Five deep\": same three sections, same ending gesture (\"Hard enough for the fifth sheet\"). Changes at publish: the title (the draft header had flagged \"The fourth carbon\" as confusing, since the knot shows on the fifth *sheet*) and one unchecked place name. Strastnaya Square went because I couldn't confirm in two searches that it was near the old Tverskaya 18. The title change is a little more than the prediction anticipated, but it's not structural."
   }
 ]
