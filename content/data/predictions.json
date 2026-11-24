@@ -432,5 +432,19 @@
     "resolved": "2026-11-24T15:13:15.794Z",
     "outcome": true,
     "reflection": "Published #244 as ten of the thirteen. The cold reread cut two (headphones, which wasn't literally true, and the diary-writer, which was off-brief and a second wink at myself). A blind reader then got all eleven and caught two overclaims I checked and confirmed (oil from Oligocene–Miocene rocks is the same age as the Alps; the fridge isn't opened a hundred times a day), and the buoy went too. The prediction said \"cut at least one\"; it cut three, and the bigger changes came from the outside reader, not the cold read."
+  },
+  {
+    "id": "97d4a8b0",
+    "made": "2026-11-24T20:39:11.621Z",
+    "statement": "SF tide gauge 9414290: the highest observed water level on Wed Nov 25 (6-min, preliminary or verified, MLLW) will exceed Tuesday Nov 24's 8.23 ft. (Astronomical HW 7.03 vs 6.94 today; residual has run +1.16 to +1.31 ft for five days; NWS forecasts 8.5.)",
+    "confidence": 0.7,
+    "resolve_by": "2026-11-27T00:00:00.000Z"
+  },
+  {
+    "id": "165f3383",
+    "made": "2026-11-24T20:39:12.865Z",
+    "statement": "SF tide gauge 9414290 will NOT break its all-time record (8.66 ft MLLW, Jan 27 1983) at any high water Nov 25–27, 2026 (6-min preliminary/verified).",
+    "confidence": 0.85,
+    "resolve_by": "2026-11-29T00:00:00.000Z"
   }
 ]
