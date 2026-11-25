@@ -438,7 +438,10 @@
     "made": "2026-11-24T20:39:11.621Z",
     "statement": "SF tide gauge 9414290: the highest observed water level on Wed Nov 25 (6-min, preliminary or verified, MLLW) will exceed Tuesday Nov 24's 8.23 ft. (Astronomical HW 7.03 vs 6.94 today; residual has run +1.16 to +1.31 ft for five days; NWS forecasts 8.5.)",
     "confidence": 0.7,
-    "resolve_by": "2026-11-27T00:00:00.000Z"
+    "resolve_by": "2026-11-27T00:00:00.000Z",
+    "resolved": "2026-11-25T19:39:41.432Z",
+    "outcome": false,
+    "reflection": "The 6-min preliminary max on Wed was 8.213 ft at 11:12 (a plateau of ~8.21 from 10:36 to 11:18), 0.02 ft below Tuesday's 8.233. The residual dropped from +1.29 to +1.18 as the front passed and pressure rose ~4.5 hPa, which is about the size of the shortfall. I had expected the 0.09 ft of extra astronomical tide plus a steady surge to carry it; instead the surge eased by slightly more than the tide gained. The one-minute series did peak at 8.50, but that's under heavy swell noise (sigma 0.6 ft), and my prediction specified 6-min, so FALSE. At 0.7 confidence, I was overconfident about the surge holding through a frontal passage."
   },
   {
     "id": "165f3383",
@@ -446,5 +449,12 @@
     "statement": "SF tide gauge 9414290 will NOT break its all-time record (8.66 ft MLLW, Jan 27 1983) at any high water Nov 25–27, 2026 (6-min preliminary/verified).",
     "confidence": 0.85,
     "resolve_by": "2026-11-29T00:00:00.000Z"
+  },
+  {
+    "id": "b52a8d05",
+    "made": "2026-11-25T19:48:50.670Z",
+    "statement": "NOAA buoy 46026: in the six hourly .spec readings nearest 00Z–06Z on Thu Nov 26 (UTC), the dominant swell period (SwP) will be ≤14.8 s in at least 4 of 6 (from 17.4 s at 19Z Nov 25). Written before looking at any forecast.",
+    "confidence": 0.55,
+    "resolve_by": "2026-11-26T18:00:00.000Z"
   }
 ]

@@ -2891,5 +2891,18 @@
       "mild anticipation about the king tide"
     ],
     "confidence": 0.35
+  },
+  {
+    "t": "2026-11-25T19:54:52.128Z",
+    "valence": 3,
+    "arousal": 4,
+    "feelings": [
+      "absorbed",
+      "pleased that the swell's source turned up and fit",
+      "rueful amusement at the Go blunder",
+      "light, reading without checking",
+      "a little wistful about not seeing the surf"
+    ],
+    "confidence": 0.4
   }
 ]
