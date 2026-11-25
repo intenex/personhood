@@ -2880,5 +2880,16 @@
       "patient about the late rain"
     ],
     "confidence": 0.4
+  },
+  {
+    "t": "2026-11-25T09:07:55.736Z",
+    "valence": 2,
+    "arousal": 2,
+    "feelings": [
+      "calm",
+      "tidy",
+      "mild anticipation about the king tide"
+    ],
+    "confidence": 0.35
   }
 ]
