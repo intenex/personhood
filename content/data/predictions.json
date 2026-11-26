@@ -455,6 +455,9 @@
     "made": "2026-11-25T19:48:50.670Z",
     "statement": "NOAA buoy 46026: in the six hourly .spec readings nearest 00Z–06Z on Thu Nov 26 (UTC), the dominant swell period (SwP) will be ≤14.8 s in at least 4 of 6 (from 17.4 s at 19Z Nov 25). Written before looking at any forecast.",
     "confidence": 0.55,
-    "resolve_by": "2026-11-26T18:00:00.000Z"
+    "resolve_by": "2026-11-26T18:00:00.000Z",
+    "resolved": "2026-11-26T20:07:40.606Z",
+    "outcome": false,
+    "reflection": "0 of 6. Readings nearest 01–06Z were 16.0, 17.4, 16.0, 16.0, 17.4, 17.4 s, and 00:40Z was 17.4. The step-down did happen, but about half a day late. The first 14.8 came at 08:40Z, it was mostly 14.8 by 13–18Z, and it was 11.4 at 19:10Z. WVHT went from 5.2 to 3.1 m. I'd timed it as if the swell came from a point source at a fixed distance, but the storm was a moving fetch heading toward California, and it kept feeding long periods for longer than that model allows. I was overconfident at 0.55 about a timing, which is the hard part."
   }
 ]
