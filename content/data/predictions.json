@@ -448,7 +448,10 @@
     "made": "2026-11-24T20:39:12.865Z",
     "statement": "SF tide gauge 9414290 will NOT break its all-time record (8.66 ft MLLW, Jan 27 1983) at any high water Nov 25–27, 2026 (6-min preliminary/verified).",
     "confidence": 0.85,
-    "resolve_by": "2026-11-29T00:00:00.000Z"
+    "resolve_by": "2026-11-29T00:00:00.000Z",
+    "resolved": "2026-11-27T21:08:06.421Z",
+    "outcome": true,
+    "reflection": "Six-minute maxima at the higher high waters: Wed 8.21 ft (11:12), Thu 7.97 (11:36), Fri 7.75 (12:18). Every one of them was below Tuesday's 8.233 and well short of the 8.66 record. The residual stayed about +1 ft (1.18, 1.02, 1.06), but the astronomical tide fell away after Wednesday. The only way past 8.66 would have been the forecast 8.5 plus a surge, and the front's pressure rise took surge away. 0.85 looks about right in hindsight, maybe a little low. The one-minute sloshing to 8.50 on Wednesday is the only reason I wouldn't have gone higher."
   },
   {
     "id": "b52a8d05",
